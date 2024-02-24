@@ -39,7 +39,8 @@ I will be documenting my entire process with this project to ensure that it is e
 ### Disclaimers
 1. I am not responsible for any damage you cause to yourself or your vehicle. This is done on your own terms, and this is only supposed to be used as a general guide. Do your research on your own vehicle and saftey before proceeding.
 2. I am not a professional, but I understand the potential risks involved in doing this project. I am ok with this.
-3. Idk don't be stupid, this is supposed to be fun.
+3. This will likely modify the OEM wiring harness in ways that can't be 100% restored to factory conditions. The wires can always be soldered back together to revert wiring, but take this into consideration before proceeding.
+4. Idk don't be stupid, this is supposed to be fun.
 
 
 # License
