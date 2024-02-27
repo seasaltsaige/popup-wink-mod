@@ -25,7 +25,7 @@ int rightStatus = -1;
 
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
-const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
+// const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
@@ -44,7 +44,8 @@ void setup() {
   pinMode(OUT_PIN_LEFT_UP, OUTPUT);
   pinMode(OUT_PIN_LEFT_UP, OUTPUT);
   
-  pinMode(INPUT_BUTTON_UP, INPUT);
+  // Using built in pullup resistor to eliminate variation in 12V -> opto-isolator input.
+  pinMode(INPUT_BUTTON_UP, INPUT_PULLUP);
   
   BLE.setDeviceName("Winkduino - Headlight Controller");
   BLE.setLocalName("Winkduino - Headlight Controller");
@@ -168,10 +169,9 @@ void loop() {
   }
 }
 
-
 bool buttonInterrupt() {
   int readVal = digitalRead(INPUT_BUTTON_UP);
-  if (readVal == HIGH) return true;
+  if (readVal == LOW) return true;
   else return false;
 }
 
