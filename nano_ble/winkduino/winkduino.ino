@@ -182,6 +182,15 @@ void loop() {
           case 10:
             syncHeadlights();
           break;
+          // Not sure if I will implement this yet.
+          default:
+            // Anything from 11-111 should be expected, allowing for a percentage up (sleepy eyes)
+            // Slider on app, allowing to be set
+            if (valueInt >= 11 && valueInt <= 111) {
+              // TODO: Implement logic
+            }
+
+          break;
         }
         delay(HEADLIGHT_MOVEMENT_DELAY);
       }
@@ -235,21 +244,38 @@ bool buttonInterrupt() {
   Will sync headlight position to arduino status in case headlights become un-synced somehow, or at initial startup. 
  */
 void syncHeadlights() {
-  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  // Should force headlights together
+  if (rightStatus != 0)
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  if (leftStatus != 0)
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
+  // Ensure headlights move in unison
   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
 
 
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
+  // Reset to down position
   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
   
   delay(HEADLIGHT_MOVEMENT_DELAY);
   leftStatus = 0;
   rightStatus = 0;
+
+  // Read oem button status
+  int status = digitalRead(INPUT_BUTTON_UP);
+  // If current button status is "LOW" or (UP), headlights should reset to up instead.
+  if (status == LOW) {
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+    rightStatus = 1;
+    delay(HEADLIGHT_MOVEMENT_DELAY);
+  }
+
 }
