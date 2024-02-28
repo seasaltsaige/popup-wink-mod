@@ -1,8 +1,5 @@
 #include <ArduinoBLE.h>
 
-// Will use a single integer value to determine what command was sent.
-int PIN_DECODE = -1;
-
 // Pins to control left side
 const int OUT_PIN_RIGHT_UP = 2;
 const int OUT_PIN_RIGHT_DOWN = 3;
@@ -11,30 +8,36 @@ const int OUT_PIN_RIGHT_DOWN = 3;
 const int OUT_PIN_LEFT_UP = 11;
 const int OUT_PIN_LEFT_DOWN = 12;
 
-// Should force "UP" state when active HIGH
-// Sets "OUT_PIN_RIGHT_DOWN" and "OUT_PIN_LEFT_DOWN" to active LOW
-// Sets "OUT_PIN_RIGHT_UP" and "OUT_PIN_LEFT_UP" to active HIGH
+int lastButtonStatus = -1;
+// Should force "UP" state when HIGH
+// Sets "OUT_PIN_RIGHT_DOWN" and "OUT_PIN_LEFT_DOWN" to LOW
+// Sets "OUT_PIN_RIGHT_UP" and "OUT_PIN_LEFT_UP" to HIGH
 const int INPUT_BUTTON_UP = 5;
 
 
 // Will be used to track status
-// TODO: Implement gaurd clauses to prevent unnecessary execution of logic (ex: Headlights up, "LEFT UP" is pressed. --> No code execution)
+// Down will be 0, up will be 1
 int leftStatus = -1;
 int rightStatus = -1; 
 
+// TODO: Time headlight movement
+// Initial guess, 0.5s
+const int HEADLIGHT_MOVEMENT_DELAY = 500;
 
+// Nano BLE Service
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
+// Characteristic to be written to
 const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
-// const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
-BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENotify, 4);
 
 bool buttonInterrupt();
 void syncHeadlights();
 
 void setup() {
+  // On setup, should call headlightSync, so the arduino can be aware of where everything is.
+
   // Basic BLE Setup.
   Serial.begin(9600);
 
@@ -46,9 +49,16 @@ void setup() {
   
   // Using built in pullup resistor to eliminate variation in 12V -> opto-isolator input.
   pinMode(INPUT_BUTTON_UP, INPUT_PULLUP);
+
+  // Sync headlights on initial boot of arduino, so it can know where it is.
+  syncHeadlights();
   
+  // NOTE: LOW means pressed in, HIGH means unpressed (INPUT_PULLUP) 
+  lastButtonStatus = digitalRead(INPUT_BUTTON_UP);
+
   BLE.setDeviceName("Winkduino - Headlight Controller");
   BLE.setLocalName("Winkduino - Headlight Controller");
+  Serial.println("Name set to: Winkduino - Headlight Controller");
 
 
   if (!BLE.begin()) {
@@ -58,10 +68,9 @@ void setup() {
 
   BLE.setAdvertisedService(service);
   service.addCharacteristic(requestCharacteristic);
-  service.addCharacteristic(responseCharacteristic);
 
   BLE.addService(service);
-  responseCharacteristic.writeValue("0");
+  requestCharacteristic.writeValue("0");
 
   BLE.advertise();
 
@@ -73,15 +82,9 @@ void loop() {
 
 
   bool mainButtonInterrupt = buttonInterrupt();
-  if (mainButtonInterrupt) {
-    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-    
-    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-
+  if (mainButtonInterrupt) 
     return;
-  }
+  
 
   BLEDevice central = BLE.central();
 
@@ -98,15 +101,8 @@ void loop() {
     while (central.connected()) {
       if (requestCharacteristic.written()) {
         bool mainButtonInterrupt = buttonInterrupt();
-        if (mainButtonInterrupt) {
-          digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-          digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-
-          digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-          digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-
+        if (mainButtonInterrupt)
           continue;
-        }
 
         String writtenValue = requestCharacteristic.value();
 
@@ -117,16 +113,40 @@ void loop() {
         switch (valueInt) {
           // Both Up
           case 1:
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+            }
 
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+            }
+
+            leftStatus = 1;
+            rightStatus = 1;
           break;
 
           // Both Down
           case 2:
+            if (leftStatus != 0) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+            }
 
+            if (rightStatus != 0) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+            }
+
+            leftStatus = 0;
+            rightStatus = 0;
           break;
 
           // Both Blink
           case 3:
+          // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
+
 
           break;
 
@@ -159,8 +179,11 @@ void loop() {
           case 9:
 
           break;
+          case 10:
+            syncHeadlights();
+          break;
         }
-
+        delay(HEADLIGHT_MOVEMENT_DELAY);
       }
     }
 
@@ -169,16 +192,64 @@ void loop() {
   }
 }
 
+/**
+  Allows built in headlight button in Miata to still be used as close to normal as possible, allowing close to normal headlight opperation, even in the case of use of BLE. 
+*/
 bool buttonInterrupt() {
   int readVal = digitalRead(INPUT_BUTTON_UP);
-  if (readVal == LOW) return true;
-  else return false;
+  if (readVal == lastButtonStatus)
+    return false;
+    
+  if (readVal == LOW) {
+    // Set headlights to UP
+    if (leftStatus != 1) {
+      digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+      digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    }
+    if (rightStatus != 1) {
+      digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+      digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    }
+    leftStatus = 1;
+    rightStatus = 1;
+  } else if (readVal == HIGH) {
+    // Set headlights to DOWN
+    if (leftStatus != 0) {
+      digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+      digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    }
+    if (rightStatus != 0) {
+      digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+      digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    }
+    leftStatus = 0;
+    rightStatus = 0;      
+  }
+  lastButtonStatus = !lastButtonStatus;
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+  return true;
+  
 }
 
 /**
   Will sync headlight position to arduino status in case headlights become un-synced somehow, or at initial startup. 
-  TODO: Set headlights to down, then up, then down.
  */
 void syncHeadlights() {
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+  leftStatus = 0;
+  rightStatus = 0;
 }
