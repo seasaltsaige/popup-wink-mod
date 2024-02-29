@@ -29,8 +29,13 @@ const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 // Characteristic to be written to
 const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
 
+// Potentially will be used to write to when busy and when available (forcing buttons to be pressed at normal times)
+// Not entirely necessary if this app is just for me, but nice for a public thing.
+const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
+
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
+BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENotify, 4);
 
 bool buttonInterrupt();
 void syncHeadlights();
@@ -68,7 +73,7 @@ void setup() {
 
   BLE.setAdvertisedService(service);
   service.addCharacteristic(requestCharacteristic);
-
+  service.addCharacteristic(responseCharacteristic);
   BLE.addService(service);
   requestCharacteristic.writeValue("0");
 
@@ -104,11 +109,13 @@ void loop() {
         if (mainButtonInterrupt)
           continue;
 
+        
+
         String writtenValue = requestCharacteristic.value();
 
         int valueInt = writtenValue.toInt();
 
-
+        responseCharacteristic.setValue("1");
         // Logic to control pin output based on written value
         switch (valueInt) {
           // Both Up
@@ -193,6 +200,7 @@ void loop() {
           break;
         }
         delay(HEADLIGHT_MOVEMENT_DELAY);
+        responseCharacteristic.setValue("0");
       }
     }
 
@@ -206,9 +214,13 @@ void loop() {
 */
 bool buttonInterrupt() {
   int readVal = digitalRead(INPUT_BUTTON_UP);
+
+
+
   if (readVal == lastButtonStatus)
     return false;
     
+  responseCharacteristic.setValue("1");
   if (readVal == LOW) {
     // Set headlights to UP
     if (leftStatus != 1) {
@@ -236,6 +248,7 @@ bool buttonInterrupt() {
   }
   lastButtonStatus = !lastButtonStatus;
   delay(HEADLIGHT_MOVEMENT_DELAY);
+  responseCharacteristic.setValue("0");
   return true;
   
 }
@@ -244,6 +257,9 @@ bool buttonInterrupt() {
   Will sync headlight position to arduino status in case headlights become un-synced somehow, or at initial startup. 
  */
 void syncHeadlights() {
+  // Set status to busy
+  responseCharacteristic.setValue("1");
+
   // Should force headlights together
   if (rightStatus != 0)
     digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
@@ -277,5 +293,8 @@ void syncHeadlights() {
     rightStatus = 1;
     delay(HEADLIGHT_MOVEMENT_DELAY);
   }
+
+  // Set status to active
+  responseCharacteristic.setValue("0");
 
 }
