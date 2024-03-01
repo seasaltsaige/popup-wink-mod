@@ -1,12 +1,12 @@
 #include <ArduinoBLE.h>
 
 // Pins to control left side
-const int OUT_PIN_RIGHT_DOWN = 2;
-const int OUT_PIN_RIGHT_UP = 3;
+const int OUT_PIN_RIGHT_UP = 2;
+const int OUT_PIN_RIGHT_DOWN = 3;
 
 // Pins to control right side
-const int OUT_PIN_LEFT_DOWN = 11;
-const int OUT_PIN_LEFT_UP = 12;
+const int OUT_PIN_LEFT_UP = 11;
+const int OUT_PIN_LEFT_DOWN = 12;
 
 int lastButtonStatus = -1;
 // Should force "UP" state when HIGH
@@ -40,6 +40,7 @@ BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENo
 bool buttonInterrupt();
 void syncHeadlights();
 void percentageDrop(long percentage);
+void setAllOff();
 
 void setup() {
   // On setup, should call headlightSync, so the arduino can be aware of where everything is.
@@ -61,6 +62,8 @@ void setup() {
 
   // Sync headlights on initial boot of arduino, so it can know where it is.
   syncHeadlights();
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+  setAllOff();
   
   // NOTE: LOW means pressed in, HIGH means unpressed (INPUT_PULLUP) 
   lastButtonStatus = digitalRead(INPUT_BUTTON_UP);
@@ -90,7 +93,8 @@ void setup() {
 void loop() {
 
 
-  buttonInterrupt();
+  bool interrupt = buttonInterrupt();
+  if (interrupt) return;
   
 
   BLEDevice central = BLE.central();
@@ -297,19 +301,20 @@ void loop() {
             if (valueInt >= 11 && valueInt <= 111) {
               // TODO: Implement logic
               int v = valueInt-11;
-              long scaled = ((long)1/((long)100))*(long)v;
+              double scaled = ((double)1/((double)100))*(double)v;
               Serial.println("SCALED");
               Serial.println(scaled);
 
               syncHeadlights();
+              delay(HEADLIGHT_MOVEMENT_DELAY);
 
-              delay(HEADLIGHT_MOVEMENT_DELAY*2);
-
+              setAllOff();
+              
               percentageDrop(scaled);
 
-              // All four relays really do not want to be off at the same time for some reason.
-              // Will debug later.
-              delay(HEADLIGHT_MOVEMENT_DELAY);
+              // After headlights synced move 
+
+              // delay(HEADLIGHT_MOVEMENT_DELAY*2);
 
               // 
               // 
@@ -320,6 +325,7 @@ void loop() {
           break;
         }
         delay(HEADLIGHT_MOVEMENT_DELAY);
+        setAllOff();
         responseCharacteristic.setValue("0");
       }
     }
@@ -329,21 +335,31 @@ void loop() {
   }
 }
 
-// I really dont get why the relays dont all want to be off...
-// maybe no sleepy eye.
-void percentageDrop(long percentage) {
-  digitalWrite(OUT_PIN_LEFT_UP, LOW);
-  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+// HUH WHY
+// Setting all pins to high at the same time for some reason actually turns them all off even though the opposite of this happens with individual pins elsewhere....
+void setAllOff() {
+  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+}
+
+// Sleepy eye working!
+void percentageDrop(double percentage) {
+  Serial.println(percentage);
+  Serial.println("IN DROP");
 
   digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
   digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+
+  Serial.println("DOWN");
 
   delay(percentage * HEADLIGHT_MOVEMENT_DELAY);
 
-  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-
-
+  Serial.println("ALL OFF");
+  setAllOff();
 }
 
 /**
@@ -351,10 +367,6 @@ void percentageDrop(long percentage) {
 */
 bool buttonInterrupt() {
   int readVal = digitalRead(INPUT_BUTTON_UP);
-
-  Serial.println(readVal);
-
-
 
   if (readVal == lastButtonStatus)
     return false;
@@ -386,7 +398,11 @@ bool buttonInterrupt() {
     rightStatus = 0;      
   }
   lastButtonStatus = !lastButtonStatus;
+
   delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  setAllOff();
+
   responseCharacteristic.setValue("0");
   return true;
   
@@ -412,13 +428,14 @@ void syncHeadlights() {
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
   // Ensure headlights move in unison
+  // Move to up position
   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 
 
-  delay(HEADLIGHT_MOVEMENT_DELAY);
+
 
   // // Reset to down position
   //   digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
@@ -435,13 +452,14 @@ void syncHeadlights() {
   // int status = digitalRead(INPUT_BUTTON_UP);
   // // If current button status is "LOW" or (UP), headlights should reset to up instead.
   // if (status == LOW) {
+  //   delay(HEADLIGHT_MOVEMENT_DELAY);
+
   //   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
   //   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
   //   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
   //   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
   //   leftStatus = 1;
   //   rightStatus = 1;
-  //   delay(HEADLIGHT_MOVEMENT_DELAY);
   // }
 
   // Set status to active
