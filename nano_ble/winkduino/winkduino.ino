@@ -1,12 +1,12 @@
 #include <ArduinoBLE.h>
 
 // Pins to control left side
-const int OUT_PIN_RIGHT_UP = 2;
-const int OUT_PIN_RIGHT_DOWN = 3;
+const int OUT_PIN_RIGHT_DOWN = 2;
+const int OUT_PIN_RIGHT_UP = 3;
 
 // Pins to control right side
-const int OUT_PIN_LEFT_UP = 11;
-const int OUT_PIN_LEFT_DOWN = 12;
+const int OUT_PIN_LEFT_DOWN = 11;
+const int OUT_PIN_LEFT_UP = 12;
 
 int lastButtonStatus = -1;
 // Should force "UP" state when HIGH
