@@ -14,7 +14,6 @@ import useBLE from "./useBLE";
 
 const winkduinoServiceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 const winkduinoRequestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
-const winkduinoResponseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 
 const App = () => {
   const {
@@ -24,13 +23,15 @@ const App = () => {
     connectToDevice,
     connectedDevice,
     disconnectFromDevice,
+    isBusy
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [isBusy, setIsBusy] = useState(false);
+
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
     if (isPermissionsEnabled) {
       scanForPeripherals();
+      console.log("Scanning")
     }
   };
 
@@ -44,21 +45,14 @@ const App = () => {
   };
 
   async function sendData(data: number): Promise<void> {
-    setIsBusy(true);
-    connectedDevice?.writeCharacteristicWithoutResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
-    // Blocking to force buttons disable while winkduino is doing its thing
-    while (true) {
-      const characteristic = await connectedDevice?.readCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID).then();
-      const val = characteristic?.value;
-      if (val === "1") continue;
-      else if (val === "0") break;
+
+    try {
+      const characteristic = await connectedDevice?.writeCharacteristicWithResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
+      console.log(characteristic?.value);
+    } catch (err) {
+      console.log("ERROR Sending Data")
+      console.log(err);
     }
-
-    setIsBusy(false);
-
-    // TODO: When setting up buttons, disable them when busy is true.
-    //
-
     console.log(data);
   }
 
@@ -68,19 +62,51 @@ const App = () => {
         {connectedDevice ? (
           <>
             {
-              <Text>Connected to {connectedDevice.name}</Text>
+              <Text style={{ fontSize: 20, color: isBusy ? "red" : "black" }}>{isBusy ? "Headlights Moving..." : "Ready for command"}</Text>
             }
 
             {
-              [[1, 2, 3], [4, 5, 6], [7, 8, 9]].map(
-                a => (
-                  a.map((n) => (
-                    <Button title="Send Data" onPress={() => sendData(n)} />
-                  ))
-                )
-              )
+              <Text style={{ fontSize: 25 }}>Connected to {connectedDevice.name}</Text>
             }
 
+            {
+              <View style={styles.flexRow}>
+                {[
+                  [
+                    { title: "Both Up", i: 1 },
+                    { title: "Both Down", i: 2 },
+                    { title: "Both Blink", i: 3 }
+                  ],
+                  [
+                    { title: "Left Up", i: 4 },
+                    { title: "Left Down", i: 5 },
+                    { title: "Left Wink", i: 6 }
+                  ],
+                  [
+                    { title: "Right Up", i: 7 },
+                    { title: "Right Down", i: 8 },
+                    { title: "Right Wink", i: 9 }
+                  ]].map(
+                    (
+                      (part) => (
+                        <View style={styles.flexCol}>
+                          {
+                            part.map((command) => (
+                              <Button disabled={isBusy} title={command.title} onPress={() => sendData(command.i)} />
+                            ))
+                          }
+                        </View>
+                      )
+                    )
+                  )}
+
+
+              </View>
+            }
+
+
+
+            <Button disabled={isBusy} title="Sync Headlights" onPress={() => sendData(10)} />
           </>
         ) : (
           <Text style={styles.titleText}>
@@ -115,6 +141,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  flexRow: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  flexCol: {
+    display: "flex",
+    flexDirection: "column",
   },
   titleText: {
     fontSize: 30,
