@@ -21,8 +21,8 @@ int leftStatus = -1;
 int rightStatus = -1; 
 
 // TODO: Time headlight movement
-// Initial guess, 0.5s
-const int HEADLIGHT_MOVEMENT_DELAY = 500;
+// Initial guess, 0.5s --> felt too short, : 0.75s
+const int HEADLIGHT_MOVEMENT_DELAY = 750;
 
 // Nano BLE Service
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
@@ -44,8 +44,11 @@ void setup() {
   // On setup, should call headlightSync, so the arduino can be aware of where everything is.
 
   // Basic BLE Setup.
-  Serial.begin(9600);
-
+  Serial.begin(115200);
+  
+  delay(500);
+  Serial.println("Starting arduino from boot");
+  
   // Set pins
   pinMode(OUT_PIN_RIGHT_UP, OUTPUT);
   pinMode(OUT_PIN_RIGHT_DOWN, OUTPUT);
@@ -61,8 +64,8 @@ void setup() {
   // NOTE: LOW means pressed in, HIGH means unpressed (INPUT_PULLUP) 
   lastButtonStatus = digitalRead(INPUT_BUTTON_UP);
 
-  BLE.setDeviceName("Winkduino - Headlight Controller");
-  BLE.setLocalName("Winkduino - Headlight Controller");
+  BLE.setDeviceName("Winkduino");
+  BLE.setLocalName("Winkduino");
   Serial.println("Name set to: Winkduino - Headlight Controller");
 
 
@@ -86,9 +89,7 @@ void setup() {
 void loop() {
 
 
-  bool mainButtonInterrupt = buttonInterrupt();
-  if (mainButtonInterrupt) 
-    return;
+  buttonInterrupt();
   
 
   BLEDevice central = BLE.central();
@@ -104,14 +105,13 @@ void loop() {
 
 
     while (central.connected()) {
+      // Moved so it actually works to interrupt
+      bool interrupt = buttonInterrupt();
+      if (interrupt) return;
+
       if (requestCharacteristic.written()) {
-        bool mainButtonInterrupt = buttonInterrupt();
-        if (mainButtonInterrupt)
-          continue;
-
-        
-
         String writtenValue = requestCharacteristic.value();
+        Serial.println(writtenValue);
 
         int valueInt = writtenValue.toInt();
 
@@ -153,37 +153,137 @@ void loop() {
           // Both Blink
           case 3:
           // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+              leftStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+              leftStatus = 0;
+            }
 
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+              rightStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+              rightStatus = 0;
+            }
+
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+              leftStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+              leftStatus = 0;
+            }
+
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+              rightStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+              rightStatus = 0;
+            }
 
           break;
 
           // Left Up
           case 4:
-
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+              leftStatus = 1;
+            }
+            
           break;
 
           // Left Down
           case 5:
-
+            if (leftStatus != 0) {
+              // Serial.println(leftStatus)
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+              leftStatus = 0;
+            }
           break;
 
           // Left Blink (Wink)
           case 6:
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+              leftStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+              leftStatus = 0;
+            }
+
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            if (leftStatus != 1) {
+              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+              leftStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_LEFT_UP, LOW);
+              leftStatus = 0;
+            }
 
           break;
 
           // Right Up
           case 7:
-
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+              rightStatus = 1;
+            }
           break;
 
           // Right Down
           case 8:
-
+            if (rightStatus != 0) {
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              rightStatus = 0;
+            }
           break;
 
           // Right Blink (Wink)
           case 9:
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+              rightStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+              rightStatus = 0;
+            }
+
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            if (rightStatus != 1) {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+              rightStatus = 1;
+            } else {
+              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+              rightStatus = 0;
+            }
 
           break;
           case 10:
@@ -214,6 +314,8 @@ void loop() {
 */
 bool buttonInterrupt() {
   int readVal = digitalRead(INPUT_BUTTON_UP);
+
+  Serial.println(readVal);
 
 
 
@@ -261,23 +363,32 @@ void syncHeadlights() {
   responseCharacteristic.setValue("1");
 
   // Should force headlights together
-  if (rightStatus != 0)
-    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-  if (leftStatus != 0)
-    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  if (rightStatus != 0) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+  }
+  if (leftStatus != 0) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  }
 
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
   // Ensure headlights move in unison
   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 
 
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
   // Reset to down position
-  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  
   
   delay(HEADLIGHT_MOVEMENT_DELAY);
   leftStatus = 0;
@@ -289,6 +400,8 @@ void syncHeadlights() {
   if (status == LOW) {
     digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
     digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
     leftStatus = 1;
     rightStatus = 1;
     delay(HEADLIGHT_MOVEMENT_DELAY);
