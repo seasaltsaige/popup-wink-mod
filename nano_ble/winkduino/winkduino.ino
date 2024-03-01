@@ -2,8 +2,8 @@
 
 
 // TODO: Use these to better track each headlights position, specifically when doing sleepy eye, so resetting them doesnt cause UP or DOWN voltage to be applied for too long
-double leftPercentageFromTop = -1;
-double rightPercentageFromTop = -1;
+double leftPercentageFromTop = 1;
+double rightPercentageFromTop = 1;
 
 // Pins to control left side
 const int OUT_PIN_RIGHT_DOWN = 2;
@@ -38,9 +38,14 @@ const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
 // Not entirely necessary if this app is just for me, but nice for a public thing.
 const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 
+
+// EASIST THING TO DO TO PREVENT HURTING MOTORS
+const char* resetCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51522";
+
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
 BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENotify, 4);
+BLEStringCharacteristic resetCharacteristic(resetCharacteristicUUID, BLENotify, 4);
 
 bool buttonInterrupt();
 void syncHeadlights();
@@ -86,8 +91,11 @@ void setup() {
   BLE.setAdvertisedService(service);
   service.addCharacteristic(requestCharacteristic);
   service.addCharacteristic(responseCharacteristic);
+  service.addCharacteristic(resetCharacteristic);
   BLE.addService(service);
   requestCharacteristic.writeValue("0");
+  responseCharacteristic.setValue("0");
+  resetCharacteristic.setValue("0");
 
   BLE.advertise();
 
@@ -316,15 +324,9 @@ void loop() {
               setAllOff();
               
               percentageDrop(scaled);
-
-              // After headlights synced move 
-
-              // delay(HEADLIGHT_MOVEMENT_DELAY*2);
-
-              // 
-              // 
-
-
+              leftPercentageFromTop = scaled;
+              rightPercentageFromTop = scaled;
+              resetCharacteristic.setValue("1");
             }
 
           break;
@@ -420,17 +422,15 @@ void syncHeadlights() {
   // Set status to busy
   responseCharacteristic.setValue("1");
 
-  // Should force headlights together
-  if (rightStatus != 0) {
-    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-  }
-  if (leftStatus != 0) {
-    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-    digitalWrite(OUT_PIN_LEFT_UP, LOW);
-  }
+  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
 
-  delay(HEADLIGHT_MOVEMENT_DELAY);
+  delay(HEADLIGHT_MOVEMENT_DELAY * (1-leftPercentageFromTop));
+
+  Serial.println(HEADLIGHT_MOVEMENT_DELAY * (leftPercentageFromTop));
+  Serial.println(HEADLIGHT_MOVEMENT_DELAY * (1-leftPercentageFromTop));
 
   // Ensure headlights move in unison
   // Move to up position
@@ -439,35 +439,12 @@ void syncHeadlights() {
   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 
+  leftPercentageFromTop = 0;
+  rightPercentageFromTop = 0;
 
 
+  resetCharacteristic.setValue("0");
 
-  // // Reset to down position
-  //   digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-  //   digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-  //   digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-  //   digitalWrite(OUT_PIN_LEFT_UP, LOW);
-  
-  
-  // delay(HEADLIGHT_MOVEMENT_DELAY);
-  // leftStatus = 0;
-  // rightStatus = 0;
-
-  // Read oem button status
-  // int status = digitalRead(INPUT_BUTTON_UP);
-  // // If current button status is "LOW" or (UP), headlights should reset to up instead.
-  // if (status == LOW) {
-  //   delay(HEADLIGHT_MOVEMENT_DELAY);
-
-  //   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-  //   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-  //   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-  //   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-  //   leftStatus = 1;
-  //   rightStatus = 1;
-  // }
-
-  // Set status to active
   responseCharacteristic.setValue("0");
 
 }
