@@ -116,7 +116,7 @@ const App = () => {
               onChangeText={setText}
               placeholder="Enter a value from 1-100"
             />
-            <Button title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 10)} />
+            <Button title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 11)} />
 
           </View>
         ) : (

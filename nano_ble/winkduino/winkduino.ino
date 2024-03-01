@@ -39,6 +39,7 @@ BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENo
 
 bool buttonInterrupt();
 void syncHeadlights();
+void percentageDrop(long percentage);
 
 void setup() {
   // On setup, should call headlightSync, so the arduino can be aware of where everything is.
@@ -295,6 +296,25 @@ void loop() {
             // Slider on app, allowing to be set
             if (valueInt >= 11 && valueInt <= 111) {
               // TODO: Implement logic
+              int v = valueInt-11;
+              long scaled = ((long)1/((long)100))*(long)v;
+              Serial.println("SCALED");
+              Serial.println(scaled);
+
+              syncHeadlights();
+
+              delay(HEADLIGHT_MOVEMENT_DELAY*2);
+
+              percentageDrop(scaled);
+
+              // All four relays really do not want to be off at the same time for some reason.
+              // Will debug later.
+              delay(HEADLIGHT_MOVEMENT_DELAY);
+
+              // 
+              // 
+
+
             }
 
           break;
@@ -307,6 +327,23 @@ void loop() {
     Serial.println("Central device disconnected.");
 
   }
+}
+
+// I really dont get why the relays dont all want to be off...
+// maybe no sleepy eye.
+void percentageDrop(long percentage) {
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+
+  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+
+  delay(percentage * HEADLIGHT_MOVEMENT_DELAY);
+
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+
+
 }
 
 /**
@@ -383,29 +420,29 @@ void syncHeadlights() {
 
   delay(HEADLIGHT_MOVEMENT_DELAY);
 
-  // Reset to down position
-    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  // // Reset to down position
+  //   digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+  //   digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+  //   digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+  //   digitalWrite(OUT_PIN_LEFT_UP, LOW);
   
   
-  delay(HEADLIGHT_MOVEMENT_DELAY);
-  leftStatus = 0;
-  rightStatus = 0;
+  // delay(HEADLIGHT_MOVEMENT_DELAY);
+  // leftStatus = 0;
+  // rightStatus = 0;
 
   // Read oem button status
-  int status = digitalRead(INPUT_BUTTON_UP);
-  // If current button status is "LOW" or (UP), headlights should reset to up instead.
-  if (status == LOW) {
-    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-    leftStatus = 1;
-    rightStatus = 1;
-    delay(HEADLIGHT_MOVEMENT_DELAY);
-  }
+  // int status = digitalRead(INPUT_BUTTON_UP);
+  // // If current button status is "LOW" or (UP), headlights should reset to up instead.
+  // if (status == LOW) {
+  //   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  //   digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  //   digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  //   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  //   leftStatus = 1;
+  //   rightStatus = 1;
+  //   delay(HEADLIGHT_MOVEMENT_DELAY);
+  // }
 
   // Set status to active
   responseCharacteristic.setValue("0");
