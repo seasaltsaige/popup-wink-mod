@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -26,6 +27,7 @@ const App = () => {
     isBusy
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [text, setText] = useState<string>("");
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
@@ -60,7 +62,7 @@ const App = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.titleWrapper}>
         {connectedDevice ? (
-          <>
+          <View style={styles.flexCol}>
             {
               <Text style={{ fontSize: 20, color: isBusy ? "red" : "black" }}>{isBusy ? "Headlights Moving..." : "Ready for command"}</Text>
             }
@@ -107,7 +109,16 @@ const App = () => {
 
 
             <Button disabled={isBusy} title="Sync Headlights" onPress={() => sendData(10)} />
-          </>
+
+            <Text style={{ fontSize: 20, textAlign: "center" }}>Sleepy Eye</Text>
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              placeholder="Enter a value from 1-100"
+            />
+            <Button title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 10)} />
+
+          </View>
         ) : (
           <Text style={styles.titleText}>
             Please connect to winkduino device...
