@@ -22,12 +22,12 @@ Originall inspired by the MX-5 Tech wink mod. While buying this is likely a much
 **Total so far** (not including wires): $63.14
 
 ## Project Plan
-- [ ] Collect all necessary components
-- [ ] Write code for arduino to test project out of car
+- [x] Collect all necessary components
+- [x] Write code for arduino to test project out of car -- Mostly done
 - [ ] Test wiring outside of car
 - [ ] Finalize design
-- [ ] Create phone app to connect to arduino
-- [ ] Modify arduino code to connect to phone app
+- [x] Create phone app to connect to arduino -- In progress
+- [x] Modify arduino code to connect to phone app
 - [ ] Modify stock wiring harness to allow for new connections
 - [ ] Wire system into car and connect everything
 - [ ] Test system
