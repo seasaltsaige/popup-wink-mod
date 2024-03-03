@@ -20,3 +20,23 @@ This project will involve solder fumes. These are dangerous to inhale. Wear a ma
 
 
 ## Gallery
+### App
+![App1](./build/images/Gallery/Connection.jpg)
+Main Landing of App
+
+![App2](./build/images/Gallery/Connection2.jpg)
+Connection Prompt
+
+![App3](./build/images/Gallery/CommandReady.jpg)
+Command Palette
+
+![App4](./build/images/Gallery/Moving.jpg)
+Headlights Moving
+
+![App5](./build/images/Gallery/SleepySet.jpg)
+Sleepy Eyes Set at 40%
+
+### Car
+![Sleepy](./build/images/Gallery/Sleepy.jpg)
+
+![Wink](./build/images/Gallery/Wink.gif)

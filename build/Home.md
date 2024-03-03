@@ -12,3 +12,7 @@
 
 - **Wire**: You can get any wire that you want, but it's recommended that you use insulated wire to protect from the hot environment in the engine bay.
 I chose to go with dual core insulated wire. ([~$0.3 per foot](https://www.amazon.com/dp/B0C5T5G2NH?psc=1&ref=ppx_yo2ov_dt_b_product_details)) Additionally, 28-30AWG wire for the connections for the arduino. ([~$0.23 per foot](https://www.amazon.com/dp/B07G2SWB19?psc=1&ref=ppx_yo2ov_dt_b_product_details)). Lastly, you will want a few jumper wires to connect to the headers of the relay switch. ([~$0.06 each](https://www.amazon.com/dp/B07GD1XFWV?psc=1&ref=ppx_yo2ov_dt_b_product_details))
+
+
+
+### [Goto Arduino Programming](https://github.com/seasaltsaige/popup-wink-mod/blob/master/build/Code/Arduino/Programming.md)

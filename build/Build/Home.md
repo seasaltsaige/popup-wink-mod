@@ -146,3 +146,6 @@ TBD: Might take power from here as well to charge the battery bank. Either that,
 ![Ground](../images/Build/Car/Ground.jpg)
 
 The ground wire is the thicker, black wire, with a circle connector on the end. We can use one of our T-Junction connectors to splice into this cable, as to avoid as much cutting of the harness.
+
+
+
