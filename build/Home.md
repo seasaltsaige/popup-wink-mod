@@ -15,4 +15,4 @@ I chose to go with dual core insulated wire. ([~$0.3 per foot](https://www.amazo
 
 
 
-### [Goto Arduino Programming](https://github.com/seasaltsaige/popup-wink-mod/blob/master/build/Code/Arduino/Programming.md)
+### [Go to Arduino Programming](https://github.com/seasaltsaige/popup-wink-mod/blob/master/build/Code/Arduino/Programming.md)
