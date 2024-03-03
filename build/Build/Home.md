@@ -3,15 +3,15 @@
 Good job getting the app installed and programming the arduino. We're now getting to the hardest part of the project. Actually putting it all together and installing it in the car. Bear with me, I will try to make this as clear and painless as possible.
 
 ## Table of Contents
-- [Component Overview]()
-  - [What each one does]()
+- [Component Overview](#component-overview)
+  - [What each one does](#what-each-one-does)
   
     
-- [Soldering the Arduino]()
+- [Soldering the Arduino](#solder-breadboard)
 
-- [Perparing the Car]()
-  - [Which wires]()
-  - [Running new wires]()
+- [Perparing the Car](#preparing-the-car)
+  - [Which wires](#which-wires)
+  - [Running new wires](#running-the-wires)
   
 - [Black Box]()
   - [Installing each component]()
@@ -127,6 +127,8 @@ But before that...
 #### Cat break
 ![Tiger](../images/CatBreak3.jpg)
 
+## Which Wires
+
 ### Radio Harness
 Again, all of these wire colors and pictures are of a ***1993 Miata*** if you have '94-'98 miata, your colors and harness may be different, and if you have a different color, please research your wiring harness before. Don't blindly follow this guide. It serves as a reference.
 
@@ -147,5 +149,29 @@ TBD: Might take power from here as well to charge the battery bank. Either that,
 
 The ground wire is the thicker, black wire, with a circle connector on the end. We can use one of our T-Junction connectors to splice into this cable, as to avoid as much cutting of the harness.
 
+### Headlamp Motor Wiring
+
+![Headlamp Before](../images/Build/Car/HeadlampWiresPreSplice.jpg)
+On ***1989-1993*** Miatas, the headlamp harness has two wires for Up and Down. These opperate separately from each other. The **White with Red Stripe** is for the "Down" voltage, while the **Red with Yellow Stripe** is for the "Up" voltage. These will both be spliced with quick disconnect connectors.
+
+![Headlamp After1](../images/Build/Car/HeadlampWiresSplicedOEM.jpg)
+After splicing. We can connect the female spade connector to the hub side (left in the image) and the male side to the actual harness. Doing this allows you to quickly remove the custom harness from the connectors, and reset back to stock wiring.
+
+![Headlamp After2](../images/Build/Car/HeadlampWiresSplicedNew.jpg)
+
+This is the new wiring connections, connecting black (down) to the white with red, and the red wire, to the red with yellow. This is just how I have mine set-up, and yours may be different depnding on the wire you got.
+
+Speaking of wire, here is the kind of wire I decided to get for this part.
+![Main Wire](../images/Wires2.jpg)
+
+This is fairly insulated wire, with two core wires run inside. I decided to get this specifically as the environment in the engine bay is quite harsh, so having insullation from the heat will be important.
 
 
+
+## Running the wires
+This part will differ from car to car, as, even with the same year of Miata, you may or may not have it easier than others. If your car *does* have cruise control, as in the case with my car, you will have to do a bit more work to be able to run the wires through the firewall. If you don't, congrats, you have it easier!
+
+#### No cruise
+Briefly, if you don't have cruise, on the drivers side of the engine bay, up on the firewall, you will see two pipes running into the firewall. These are for your heatercore. Don't mess with them. Nearby you should see an open grommet, or at least, grommet with no wires passing through. Use this to pass your wires through, and only follow the next steps as a general process (no drilling).
+
+### Cruise Controll Cars

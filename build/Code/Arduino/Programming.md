@@ -2,14 +2,14 @@
 
 ## Table of contents
 
-- [Installing the Arduino IDE]()
-- [Uploading the code]()
-  - [Download]()
-  - [Connection]()
-  - [Code overview]()
-    - [Download]()
-    - [Modification]()
-  - [Uploading to Board]()
+- [Installing the Arduino IDE](#installing-the-arduino-ide)
+- [Uploading the code](#uploading-the-code)
+  - [Download](#download)
+  - [Connection](#connection)
+  - [Code overview](#code-overview)
+    - [Download](#download-the-code)
+    - [Modification](#modifying-the-code)
+  - [Uploading to Board](#uploading-the-code)
 
 
 ## Installing the Arduino IDE
@@ -29,7 +29,7 @@ If it doesn't, you open the dropdown and select the Arduino. Make sure the COM P
 
 ## Code overview
 
-### Download
+### Download the Code
 To download the script that will be the main brains behind controlling the headlights, head to the [nano_ble](https://github.com/seasaltsaige/popup-wink-mod/blob/master/nano_ble/winkduino/winkduino.ino) folder, and click on the .ino file. In the top right of the code, there will be a "download raw" button. Download the file and save it to a folder with the same name as the file. (The IDE requires this.)
 
 ![Download Script](../../images/Arduino/DownloadCode.png)
