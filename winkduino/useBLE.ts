@@ -11,6 +11,7 @@ import base64 from "react-native-base64";
 import * as ExpoDevice from "expo-device";
 const winkduinoServiceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 const winkduinoResponseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
+const resetCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51522";
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
   scanForPeripherals(): void;
@@ -19,6 +20,7 @@ interface BluetoothLowEnergyApi {
   connectedDevice: Device | null;
   allDevices: Device[];
   isBusy: boolean;
+  needsReset: boolean;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -26,6 +28,7 @@ function useBLE(): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [needsReset, setNeedsReset] = useState(false);
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -109,7 +112,8 @@ function useBLE(): BluetoothLowEnergyApi {
       await deviceConnection.discoverAllServicesAndCharacteristics();
       bleManager.stopDeviceScan();
 
-      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID, subscribeToBusy)
+      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID, subscribeToBusy);
+      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID, subscribeToReset);
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
     }
@@ -131,6 +135,13 @@ function useBLE(): BluetoothLowEnergyApi {
     else setIsBusy(false);
   }
 
+  const subscribeToReset = (error: BleError | null, characteristic: Characteristic | null) => {
+    if (error) {
+      console.log(error);
+    }
+    if (base64.decode(characteristic?.value!) == "1") setNeedsReset(true);
+    else setNeedsReset(false);
+  }
 
   return {
     scanForPeripherals,
@@ -139,7 +150,8 @@ function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-    isBusy
+    isBusy,
+    needsReset,
   };
 }
 

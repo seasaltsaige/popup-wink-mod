@@ -24,7 +24,8 @@ const App = () => {
     connectToDevice,
     connectedDevice,
     disconnectFromDevice,
-    isBusy
+    isBusy,
+    needsReset,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
@@ -94,7 +95,9 @@ const App = () => {
                         <View style={styles.flexCol}>
                           {
                             part.map((command) => (
-                              <Button disabled={isBusy} title={command.title} onPress={() => sendData(command.i)} />
+                              <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} key={command.i} disabled={isBusy && needsReset} onPress={() => sendData(command.i)}>
+                                <Text style={needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>{command.title}</Text>
+                              </TouchableOpacity>
                             ))
                           }
                         </View>
@@ -108,7 +111,7 @@ const App = () => {
 
 
 
-            <Button disabled={isBusy} title="Sync Headlights" onPress={() => sendData(10)} />
+            <Button disabled={!needsReset} title="Sync Headlights" onPress={() => sendData(10)} />
 
             <Text style={{ fontSize: 20, textAlign: "center" }}>Sleepy Eye</Text>
             <TextInput
@@ -116,7 +119,7 @@ const App = () => {
               onChangeText={setText}
               placeholder="Enter a value from 1-100"
             />
-            <Button title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 11)} />
+            <Button disabled={needsReset} title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 11)} />
 
           </View>
         ) : (
@@ -173,15 +176,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 50,
-    marginHorizontal: 20,
-    marginBottom: 5,
-    borderRadius: 8,
+    marginHorizontal: 5,
+    marginBottom: 10,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+  },
+  ctaButtonDisabled: {
+    backgroundColor: "lightgrey",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    marginHorizontal: 5,
+    marginBottom: 10,
+    borderRadius: 6,
+    paddingHorizontal: 8,
   },
   ctaButtonText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
   },
+  ctaButtonTextDisabled: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "grey",
+  },
+  sendButton: {
+    margin: 10,
+  }
 });
 
 export default App;
