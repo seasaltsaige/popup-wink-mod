@@ -12,7 +12,7 @@ Note: I only have an android phone to test and install this app on, so, unfortun
     - [CLI Login](#cli-login)
   - [Building App](#building-the-app)
   - [Download](#download-the-build)
-    -[Install](#install-the-app)
+    - [Install](#install-the-app)
 
 ## Basic Install
 Recommended for most people if you don't know anything about React Native and/or Expo. Unfortunately this is Android only. Sorry iOS, you'll want to follow the [Personal Install]() and do your research for building to Apple devices.
