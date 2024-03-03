@@ -28,12 +28,12 @@ In this section we will learn what each component used in this project does.
 ![](../images/Build/RelayConnected.jpg)
 
 ### What each one does
-If you want to skip the introduction to each component, skip to [Soldering the Arduino]().
+If you want to skip the introduction to each component, skip to [Soldering the Arduino](#solder-breadboard).
 
 #### Arduino Nano 33 BLE Rev2
 ![Nano BLE](../images/Nano.jpg)
 
-This little guy will act as the brains of the whole opperation. You should have already programmed the board, but if not, that isn't that big of a deal, and can be done at any time. Just go to [Programming your Arduino](). It will be recieving commands from your phone and turning that into the correct pulses to make the headlights move how you want.
+This little guy will act as the brains of the whole opperation. You should have already programmed the board, but if not, that isn't that big of a deal, and can be done at any time. Just go to [Programming your Arduino](https://github.com/seasaltsaige/popup-wink-mod/edit/master/build/Code/Arduino/Programming.md). It will be recieving commands from your phone and turning that into the correct pulses to make the headlights move how you want.
 
 
 #### Relays
