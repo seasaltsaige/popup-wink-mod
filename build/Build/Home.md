@@ -113,7 +113,36 @@ These red and black wires are temporary, for the purpose of the docs, but we wil
 
 You don't need to follow this convention, but I just did it so I could remember which wires are which. Down will be black, and Up will be red.
 
+### Optocoupler
+![Optocoupler](../images/Build/Optocoupler.jpg)
+
+This will be the connection point between the OEM Button and our new system. The left side is not connected, as that will be connecting to 12V of the button, and ground in the car. On the right side, we can disregard the VCC pin. What we need to do is connect D5 to the "OUT" pin, and a ground wire to "GND". Since we have pin D5 set to "INPUT_PULLUP", what this does, is when the circuit is completed, it will allow D5 to be shorted to ground, pulling it to LOW. The code is setup for this, but if you know what you're doing, feel free to change whatever you want.
 
 
 ## Preparing the car
 To preface this section, if you are doing this on an NA Miata, and you have Cruise Control, you will likely need to drill some holes in the firewall of the car. If you don't have cruise control, you're "lucky" as there will be a grommet already installed where the cruise cable would go through. You can just use this hole to run the wires.
+
+
+But before that...
+#### Cat break
+![Tiger](../images/CatBreak3.jpg)
+
+### Radio Harness
+Again, all of these wire colors and pictures are of a ***1993 Miata*** if you have '94-'98 miata, your colors and harness may be different, and if you have a different color, please research your wiring harness before. Don't blindly follow this guide. It serves as a reference.
+
+![Radio1](../images/Build/Car/BlueWithRedNoSplice.jpg)
+
+On the largest connector that goes to your radio, there is a wire that supplies a constant 12V source, as to run the clock. We will be splicing into this wire, as we want constant 12V, so we are able to use the headlights both while the car is on, or off. On **my** car, this is the Blue w/ Red stripe, that goes to the largest connector.
+
+![Radio2](../images/Build/Car/BlueWithRed1.jpg)
+![Radio3](../images/Build/Car/BlueWithRed2.jpg)
+
+I spliced into it, and wired in two wires. One to reconnect to the harness plug, and one to go off to power the relays.
+
+
+TBD: Might take power from here as well to charge the battery bank. Either that, or a keyed 12V source.
+
+
+![Ground](../images/Build/Car/Ground.jpg)
+
+The ground wire is the thicker, black wire, with a circle connector on the end. We can use one of our T-Junction connectors to splice into this cable, as to avoid as much cutting of the harness.
