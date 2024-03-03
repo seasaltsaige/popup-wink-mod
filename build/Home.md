@@ -4,6 +4,7 @@
 
 - **Arduino Nano 33 BLE**: Main Controller. ([~$24](https://www.ebay.com/) or [~$29.30](https://store-usa.arduino.cc/products/arduino-nano-33-ble-with-headers?queryID=609ff256f865f54a71149598cbcd2114&selectedStore=us))
 - **4 Way 12V Relay**: Required for transmitting power to the headlights, as the Nano does not provide enough voltage. ([$6.95](https://www.amazon.com/dp/B00KTEN3TM?psc=1&ref=ppx_yo2ov_dt_b_product_details))
+- **Opto-coupler**: Used to couple to the OEM button. Separates the voltages and keeps the Nano safe. ([~$3.00](https://www.amazon.com/dp/B01L1OI1HC?ref=ppx_yo2ov_dt_b_product_details&th=1))
 - **Solder Breadboard**: Facilitates easy and secure connections during the setup. ([$2.25](https://www.amazon.com/dp/B00KTEN3TM?psc=1&ref=ppx_yo2ov_dt_b_product_details))
 - **Battery Bank**: Provides power to the Arduino when the car is turned off. ([$16.95](https://www.amazon.com/dp/B07JZCZSH9?psc=1&ref=ppx_yo2ov_dt_b_product_details))
 - **12V to 5V DC to DC Power Converter**: Not a necessity, but if you want to set it and forget it, you'll want it to charge the battery bank while the car is running. ([$12.99](https://www.amazon.com/dp/B07SS6XTZY?ref=ppx_yo2ov_dt_b_product_details&th=1))
