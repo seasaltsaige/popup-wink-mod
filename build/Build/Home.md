@@ -24,7 +24,8 @@ Good job getting the app installed and programming the arduino. We're now gettin
 
 ## Component Overview
 In this section we will learn what each component used in this project does.
-![]
+
+![](../images/Build/RelayConnected.jpg)
 
 ### What each one does
 If you want to skip the introduction to each component, skip to [Soldering the Arduino]().
