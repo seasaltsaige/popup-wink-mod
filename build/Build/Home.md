@@ -176,3 +176,11 @@ This part will differ from car to car, as, even with the same year of Miata, you
 Briefly, if you don't have cruise, on the drivers side of the engine bay, up on the firewall, you will see two pipes running into the firewall. These are for your heatercore. Don't mess with them. Nearby you should see an open grommet, or at least, grommet with no wires passing through. Use this to pass your wires through, and only follow the next steps as a general process (no drilling).
 
 ### Cruise Controll Cars
+![Firewall Inner](../images/Build/Car/FireWall.jpg)
+
+From the inside of the car, under the dash, on the gas pedal, we will find two cables mounted to it. (1 for cruise-less cars) The one circled is your cruise cable. We will be making new holes nearby this cable. Really, you can make your holes in the firewall wherever you want, but I'd recommend on this side, as the otherside has a bunch of stuff in the way.
+
+![Firewall Outer](../images/Build/Car/FirewallOuter.jpg)
+View From the outside, on the drivers side. (Circled being the cruise cable.)
+
+We will go ahead and drill through nearby here.
