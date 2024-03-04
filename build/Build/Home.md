@@ -13,13 +13,9 @@ Good job getting the app installed and programming the arduino. We're now gettin
   - [Which wires](#which-wires)
   - [Running new wires](#running-the-wires)
   
-- [Black Box]()
-  - [Installing each component]()
-    - ... (each one here)
-
-- [Putting it all together]()
-  - [Soldering to black box]()
-  - [Connecting headlight wires]()
+- [Installing Components](#installing-components)
+  - [Ideal Mounts](#ideal-mounts)
+  - [Alternative](#alternative)
 
 
 ## Component Overview
@@ -184,3 +180,11 @@ From the inside of the car, under the dash, on the gas pedal, we will find two c
 View From the outside, on the drivers side. (Circled being the cruise cable.)
 
 We will go ahead and drill through nearby here.
+
+
+![Drilled Firewall]
+
+![Ran Wires] - connection to headlamps, run location, routeing on interior
+
+## Installing Components
+
