@@ -6,18 +6,18 @@ double leftPercentageFromTop = 1;
 double rightPercentageFromTop = 1;
 
 // Pins to control left side
-const int OUT_PIN_RIGHT_DOWN = 2;
-const int OUT_PIN_RIGHT_UP = 3;
+const int OUT_PIN_RIGHT_DOWN = 3;
+const int OUT_PIN_RIGHT_UP = 2;
 
 // Pins to control right side
-const int OUT_PIN_LEFT_DOWN = 11;
-const int OUT_PIN_LEFT_UP = 12;
+const int OUT_PIN_LEFT_DOWN = 12;
+const int OUT_PIN_LEFT_UP = 11;
 
 int lastButtonStatus = -1;
 // Should force "UP" state when HIGH
 // Sets "OUT_PIN_RIGHT_DOWN" and "OUT_PIN_LEFT_DOWN" to LOW
 // Sets "OUT_PIN_RIGHT_UP" and "OUT_PIN_LEFT_UP" to HIGH
-const int INPUT_BUTTON_UP = 5;
+const int INPUT_BUTTON_UP = 6;
 
 
 // Will be used to track status
@@ -27,7 +27,7 @@ int rightStatus = -1;
 
 // TODO: Time headlight movement
 // Initial guess, 0.5s --> felt too short, : 0.75s
-const int HEADLIGHT_MOVEMENT_DELAY = 750;
+const int HEADLIGHT_MOVEMENT_DELAY = 700;
 
 // Nano BLE Service
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
@@ -42,10 +42,16 @@ const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 // EASIST THING TO DO TO PREVENT HURTING MOTORS
 const char* resetCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51522";
 
+const char *leftStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51523";
+const char *rightStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51524";
+
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
 BLEStringCharacteristic responseCharacteristic(responseCharacteristicUUID, BLENotify, 4);
 BLEStringCharacteristic resetCharacteristic(resetCharacteristicUUID, BLENotify, 4);
+
+BLEStringCharacteristic rightStatusCharacteristic(rightStatusUUID, BLENotify, 4);
+BLEStringCharacteristic leftStatusCharacteristic(leftStatusUUID, BLENotify, 4);
 
 bool buttonInterrupt();
 void syncHeadlights();
@@ -92,15 +98,19 @@ void setup() {
   service.addCharacteristic(requestCharacteristic);
   service.addCharacteristic(responseCharacteristic);
   service.addCharacteristic(resetCharacteristic);
+  
+  service.addCharacteristic(leftStatusCharacteristic);
+  service.addCharacteristic(rightStatusCharacteristic);
+
   BLE.addService(service);
+
   requestCharacteristic.writeValue("0");
   responseCharacteristic.setValue("0");
   resetCharacteristic.setValue("0");
+  leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
+  rightStatusCharacteristic.setValue(String(1 - rightPercentageFromTop));
 
   BLE.advertise();
-
-  Serial.println("Arduino Nano 33 BLE (Peripheral Device)");
-  Serial.println(" ");
 }
 
 void loop() {
@@ -113,7 +123,7 @@ void loop() {
   BLEDevice central = BLE.central();
 
   Serial.println("Discovering central device...");
-  delay(500);
+  delay(250);
 
   if (central) {
     Serial.println("Connected to central device.");
@@ -121,8 +131,20 @@ void loop() {
     Serial.println(central.address());
     Serial.println();
 
-
     while (central.connected()) {
+
+      // Alert app of current status, for when app disconnects and reconnects
+      int left = leftPercentageFromTop;
+      if (leftPercentageFromTop - left > 0) {
+        leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
+        rightStatusCharacteristic.setValue(String(1 - rightPercentageFromTop));
+        resetCharacteristic.setValue("1");
+      } else {
+        leftStatusCharacteristic.setValue(String(leftStatus));
+        rightStatusCharacteristic.setValue(String(rightStatus));
+        resetCharacteristic.setValue("0");
+      }
+
       // Moved so it actually works to interrupt
       bool interrupt = buttonInterrupt();
       if (interrupt) return;
@@ -167,7 +189,6 @@ void loop() {
             leftStatus = 0;
             rightStatus = 0;
           break;
-
           // Both Blink
           case 3:
           // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
@@ -305,15 +326,18 @@ void loop() {
 
           break;
           case 10:
+            // wave
+          break;
+          case 11:
             syncHeadlights();
           break;
           // Not sure if I will implement this yet.
           default:
             // Anything from 11-111 should be expected, allowing for a percentage up (sleepy eyes)
             // Slider on app, allowing to be set
-            if (valueInt >= 11 && valueInt <= 111) {
+            if (valueInt >= 12 && valueInt <= 112) {
               // TODO: Implement logic
-              int v = valueInt-11;
+              int v = valueInt-12;
               double scaled = ((double)1/((double)100))*(double)v;
               Serial.println("SCALED");
               Serial.println(scaled);
@@ -334,6 +358,15 @@ void loop() {
         delay(HEADLIGHT_MOVEMENT_DELAY);
         setAllOff();
         responseCharacteristic.setValue("0");
+
+        if (valueInt < 12) {
+          leftStatusCharacteristic.setValue(String(leftStatus));
+          rightStatusCharacteristic.setValue(String(rightStatus));
+        } else {
+          leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
+          rightStatusCharacteristic.setValue(String(1 - rightPercentageFromTop));
+        }
+
       }
     }
 
@@ -345,10 +378,10 @@ void loop() {
 // HUH WHY
 // Setting all pins to high at the same time for some reason actually turns them all off even though the opposite of this happens with individual pins elsewhere....
 void setAllOff() {
-  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-  digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-  digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
 }
 
 // Sleepy eye working!
@@ -429,9 +462,6 @@ void syncHeadlights() {
 
   delay(HEADLIGHT_MOVEMENT_DELAY * (1-leftPercentageFromTop));
 
-  Serial.println(HEADLIGHT_MOVEMENT_DELAY * (leftPercentageFromTop));
-  Serial.println(HEADLIGHT_MOVEMENT_DELAY * (1-leftPercentageFromTop));
-
   // Ensure headlights move in unison
   // Move to up position
   digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
@@ -442,6 +472,8 @@ void syncHeadlights() {
   leftPercentageFromTop = 0;
   rightPercentageFromTop = 0;
 
+  leftStatus = 1;
+  rightStatus = 1;
 
   resetCharacteristic.setValue("0");
 
