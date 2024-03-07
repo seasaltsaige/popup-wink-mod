@@ -26,6 +26,8 @@ const App = () => {
     disconnectFromDevice,
     isBusy,
     needsReset,
+    leftStatus,
+    rightStatus
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
@@ -48,28 +50,39 @@ const App = () => {
   };
 
   async function sendData(data: number): Promise<void> {
-
+    if (isBusy) return;
     try {
       const characteristic = await connectedDevice?.writeCharacteristicWithResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
-      console.log(characteristic?.value);
     } catch (err) {
       console.log("ERROR Sending Data")
       console.log(err);
     }
-    console.log(data);
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleWrapper}>
         {connectedDevice ? (
-          <View style={styles.flexCol}>
-            {
-              <Text style={{ fontSize: 20, color: isBusy ? "red" : "black" }}>{isBusy ? "Headlights Moving..." : "Ready for command"}</Text>
-            }
+          <View style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+
+
+            <Text style={{ fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 60 }}>Connected to {connectedDevice.name}</Text>
+
+
+            <View style={{ display: "flex", flexDirection: "row", marginBottom: 20 }}>
+              {/* View that will contain headlight status */}
+              <View style={{ display: "flex", flexDirection: "column", marginRight: 10 }}>
+                <Text style={{ fontSize: 20, textAlign: "center" }}>Left Headlight Status</Text>
+                <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{leftStatus}</Text>
+              </View>
+              <View style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
+                <Text style={{ fontSize: 20, textAlign: "center" }}>Right Headlight Status</Text>
+                <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{rightStatus}</Text>
+              </View>
+            </View>
 
             {
-              <Text style={{ fontSize: 25 }}>Connected to {connectedDevice.name}</Text>
+              <Text style={{ fontSize: 20, color: isBusy ? "red" : "black", textAlign: "center" }}>{isBusy ? "Headlights Moving..." : "Ready for command"}</Text>
             }
 
             {
@@ -95,7 +108,7 @@ const App = () => {
                         <View style={styles.flexCol}>
                           {
                             part.map((command) => (
-                              <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} key={command.i} disabled={isBusy && needsReset} onPress={() => sendData(command.i)}>
+                              <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} key={command.i} disabled={isBusy || needsReset} onPress={() => sendData(command.i)}>
                                 <Text style={needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>{command.title}</Text>
                               </TouchableOpacity>
                             ))
@@ -109,9 +122,11 @@ const App = () => {
               </View>
             }
 
+            {/* TODO: Wave */}
 
-
-            <Button disabled={!needsReset} title="Sync Headlights" onPress={() => sendData(10)} />
+            <TouchableOpacity style={!needsReset ? styles.resetButtonDisabled : styles.resetButton} onPress={() => sendData(11)} disabled={!needsReset}>
+              <Text style={!needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>Sync Headlights</Text>
+            </TouchableOpacity>
 
             <Text style={{ fontSize: 20, textAlign: "center" }}>Sleepy Eye</Text>
             <TextInput
@@ -119,7 +134,7 @@ const App = () => {
               onChangeText={setText}
               placeholder="Enter a value from 1-100"
             />
-            <Button disabled={needsReset} title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 11)} />
+            <Button disabled={needsReset} title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 12)} />
 
           </View>
         ) : (
@@ -159,6 +174,9 @@ const styles = StyleSheet.create({
   flexRow: {
     display: "flex",
     flexDirection: "row",
+    alignContent: "center",
+    justifyContent: "center",
+
   },
   flexCol: {
     display: "flex",
@@ -191,15 +209,35 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
   },
+  resetButton: {
+    backgroundColor: "#FF6020",
+    justifyContent: "center",
+    alignSelf: "center",
+    height: 40,
+    width: 250,
+    marginBottom: 60,
+    borderRadius: 5,
+  },
+  resetButtonDisabled: {
+    backgroundColor: "lightgrey",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 40,
+    width: 250,
+    marginBottom: 60,
+    borderRadius: 5,
+  },
   ctaButtonText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    textAlign: "center",
   },
   ctaButtonTextDisabled: {
     fontSize: 18,
     fontWeight: "bold",
     color: "grey",
+    textAlign: "center",
   },
   sendButton: {
     margin: 10,

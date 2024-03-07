@@ -66,7 +66,6 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
       visible={visible}
     >
       <SafeAreaView style={modalStyle.modalTitle}>
-        <Button title="Close" onPress={closeModal} />
         <Text style={modalStyle.modalTitleText}>
           Tap on a device to connect
         </Text>
@@ -75,6 +74,9 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
           data={devices}
           renderItem={renderDeviceModalListItem}
         />
+
+
+        <Button title="Close" onPress={closeModal} />
       </SafeAreaView>
     </Modal>
   );

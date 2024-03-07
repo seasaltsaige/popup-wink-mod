@@ -12,6 +12,10 @@ import * as ExpoDevice from "expo-device";
 const winkduinoServiceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 const winkduinoResponseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 const resetCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51522";
+
+const leftStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51523";
+const rightStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51524";
+
 interface BluetoothLowEnergyApi {
   requestPermissions(): Promise<boolean>;
   scanForPeripherals(): void;
@@ -21,6 +25,8 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
   isBusy: boolean;
   needsReset: boolean;
+  leftStatus: number;
+  rightStatus: number;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
@@ -29,6 +35,9 @@ function useBLE(): BluetoothLowEnergyApi {
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [needsReset, setNeedsReset] = useState(false);
+
+  const [leftStatus, setLeftStatus] = useState(0);
+  const [rightStatus, setRightStatus] = useState(0);
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -111,9 +120,22 @@ function useBLE(): BluetoothLowEnergyApi {
       setConnectedDevice(deviceConnection);
       await deviceConnection.discoverAllServicesAndCharacteristics();
       bleManager.stopDeviceScan();
+      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID, subscribeToReset);
+      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, leftStatusUUID, subscribeToLeft);
+      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, rightStatusUUID, subscribeToRight);
+
+      // const leftCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, leftStatusUUID);
+      // const rightCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, rightStatusUUID);
+      // const resetCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID);
+
+      // setLeftStatus(parseFloat(base64.decode(leftCharacteristic.value!)));
+      // setRightStatus(parseFloat(base64.decode(rightCharacteristic.value!)));
+
+      // setNeedsReset(base64.decode(resetCharacteristic.value!) == "1");
 
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID, subscribeToBusy);
-      deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID, subscribeToReset);
+
+
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
     }
@@ -123,6 +145,7 @@ function useBLE(): BluetoothLowEnergyApi {
     if (connectedDevice) {
       bleManager.cancelDeviceConnection(connectedDevice.id);
       setConnectedDevice(null);
+      setAllDevices([]);
     }
   };
 
@@ -139,8 +162,23 @@ function useBLE(): BluetoothLowEnergyApi {
     if (error) {
       console.log(error);
     }
+    console.log(base64.decode(characteristic?.value!));
     if (base64.decode(characteristic?.value!) == "1") setNeedsReset(true);
     else setNeedsReset(false);
+  }
+
+  const subscribeToLeft = (error: BleError | null, characteristic: Characteristic | null) => {
+    if (error) {
+      console.log(error);
+    }
+    setLeftStatus(parseFloat(base64.decode(characteristic?.value!)));
+  }
+
+  const subscribeToRight = (error: BleError | null, characteristic: Characteristic | null) => {
+    if (error) {
+      console.log(error);
+    }
+    setRightStatus(parseFloat(base64.decode(characteristic?.value!)));
   }
 
   return {
@@ -152,6 +190,8 @@ function useBLE(): BluetoothLowEnergyApi {
     disconnectFromDevice,
     isBusy,
     needsReset,
+    leftStatus,
+    rightStatus,
   };
 }
 
