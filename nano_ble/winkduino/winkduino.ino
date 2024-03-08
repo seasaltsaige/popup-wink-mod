@@ -133,7 +133,7 @@ void loop() {
 
     while (central.connected()) {
 
-      // Alert app of current status, for when app disconnects and reconnects
+      // Alert app of current status, for when app disconnects and reconnects7
       int left = leftPercentageFromTop;
       if (leftPercentageFromTop - left > 0) {
         leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
@@ -325,19 +325,79 @@ void loop() {
             }
 
           break;
+          // "Wave" left first
           case 10:
-            // wave
+            // App forces headlights to be up, in order to send these two commands
+            // Left Down
+            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+            digitalWrite(OUT_PIN_LEFT_UP, LOW);
+
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            // Left back up
+            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+            // Right down at same time
+            digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            // Turn left off
+            digitalWrite(OUT_PIN_LEFT_UP, LOW);
+            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            // Right back up
+            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            // Turn all off
+            setAllOff();
           break;
           case 11:
+            // "Wave" right first
+
+            // Same logic as above, but switched for right first
+            // Right Down
+            digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+            // Right back up
+            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+            // Left down at same time
+            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+            digitalWrite(OUT_PIN_LEFT_UP, LOW);
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            // Turn right off
+            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+
+            // Left back up
+            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            // Turn all off
+            setAllOff();
+
+          case 12:
             syncHeadlights();
           break;
           // Not sure if I will implement this yet.
           default:
             // Anything from 11-111 should be expected, allowing for a percentage up (sleepy eyes)
             // Slider on app, allowing to be set
-            if (valueInt >= 12 && valueInt <= 112) {
+            if (valueInt >= 13 && valueInt <= 113) {
               // TODO: Implement logic
-              int v = valueInt-12;
+              int v = valueInt-13;
               double scaled = ((double)1/((double)100))*(double)v;
               Serial.println("SCALED");
               Serial.println(scaled);
@@ -375,8 +435,6 @@ void loop() {
   }
 }
 
-// HUH WHY
-// Setting all pins to high at the same time for some reason actually turns them all off even though the opposite of this happens with individual pins elsewhere....
 void setAllOff() {
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_UP, LOW);
