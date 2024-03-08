@@ -6,6 +6,8 @@ import {
   BleManager,
   Characteristic,
   Device,
+  ScanCallbackType,
+  ScanMode,
 } from "react-native-ble-plx";
 import base64 from "react-native-base64";
 import * as ExpoDevice from "expo-device";
@@ -99,7 +101,7 @@ function useBLE(): BluetoothLowEnergyApi {
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
   const scanForPeripherals = () =>
-    bleManager.startDeviceScan(null, null, (error, device) => {
+    bleManager.startDeviceScan(null, { scanMode: ScanMode.Balanced, allowDuplicates: true, callbackType: ScanCallbackType.AllMatches }, (error, device) => {
       if (error) {
         console.log(error);
       }
@@ -123,19 +125,7 @@ function useBLE(): BluetoothLowEnergyApi {
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID, subscribeToReset);
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, leftStatusUUID, subscribeToLeft);
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, rightStatusUUID, subscribeToRight);
-
-      // const leftCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, leftStatusUUID);
-      // const rightCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, rightStatusUUID);
-      // const resetCharacteristic = await deviceConnection.readCharacteristicForService(winkduinoServiceUUID, resetCharacteristicUUID);
-
-      // setLeftStatus(parseFloat(base64.decode(leftCharacteristic.value!)));
-      // setRightStatus(parseFloat(base64.decode(rightCharacteristic.value!)));
-
-      // setNeedsReset(base64.decode(resetCharacteristic.value!) == "1");
-
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID, subscribeToBusy);
-
-
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
     }

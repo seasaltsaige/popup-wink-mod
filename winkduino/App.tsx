@@ -52,7 +52,7 @@ const App = () => {
   async function sendData(data: number): Promise<void> {
     if (isBusy) return;
     try {
-      const characteristic = await connectedDevice?.writeCharacteristicWithResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
+      await connectedDevice?.writeCharacteristicWithResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
     } catch (err) {
       console.log("ERROR Sending Data")
       console.log(err);
@@ -65,8 +65,9 @@ const App = () => {
         {connectedDevice ? (
           <View style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-
-            <Text style={{ fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 60 }}>Connected to {connectedDevice.name}</Text>
+            <Text style={{ fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30 }}>
+              Connected to {connectedDevice.name}
+            </Text>
 
 
             <View style={{ display: "flex", flexDirection: "row", marginBottom: 20 }}>
@@ -82,7 +83,9 @@ const App = () => {
             </View>
 
             {
-              <Text style={{ fontSize: 20, color: isBusy ? "red" : "black", textAlign: "center" }}>{isBusy ? "Headlights Moving..." : "Ready for command"}</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: isBusy ? "red" : "black", textAlign: "center", marginBottom: 5 }}>
+                {isBusy ? "Headlights Moving..." : "Ready for command"}
+              </Text>
             }
 
             {
@@ -122,19 +125,44 @@ const App = () => {
               </View>
             }
 
-            {/* TODO: Wave */}
+            <View style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 5 }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 5, marginTop: 10 }}>
+                Wave
+              </Text>
 
-            <TouchableOpacity style={!needsReset ? styles.resetButtonDisabled : styles.resetButton} onPress={() => sendData(11)} disabled={!needsReset}>
+              <View style={{ display: "flex", flexDirection: "row", alignContent: "center" }}>
+
+                <TouchableOpacity style={(leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginRight: 10 } : { ...styles.ctaButton, marginRight: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(10)}>
+                  <Text style={(leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+                    Left Wave
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={(leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginLeft: 10 } : { ...styles.ctaButton, marginLeft: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(11)}>
+                  <Text style={(leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+                    Right Wave
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+            </View>
+
+            <TouchableOpacity style={!needsReset ? styles.resetButtonDisabled : styles.resetButton} onPress={() => sendData(12)} disabled={!needsReset}>
               <Text style={!needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>Sync Headlights</Text>
             </TouchableOpacity>
 
-            <Text style={{ fontSize: 20, textAlign: "center" }}>Sleepy Eye</Text>
+            <Text style={{ fontSize: 20, textAlign: "center", fontWeight: "bold" }}>Sleepy Eye</Text>
             <TextInput
               value={text}
               onChangeText={setText}
               placeholder="Enter a value from 1-100"
+              style={{ width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
             />
-            <Button disabled={needsReset} title="Send Percentage" onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 12)} />
+            <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} disabled={needsReset} onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 13)}>
+              <Text style={needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+                Send Percentage
+              </Text>
+            </TouchableOpacity>
 
           </View>
         ) : (
@@ -157,7 +185,7 @@ const App = () => {
         connectToPeripheral={connectToDevice}
         devices={allDevices}
       />
-    </SafeAreaView>
+    </SafeAreaView >
   );
 };
 
@@ -215,7 +243,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 40,
     width: 250,
-    marginBottom: 60,
+    marginBottom: 20,
     borderRadius: 5,
   },
   resetButtonDisabled: {
@@ -224,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 40,
     width: 250,
-    marginBottom: 60,
+    marginBottom: 20,
     borderRadius: 5,
   },
   ctaButtonText: {
