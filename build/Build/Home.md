@@ -169,8 +169,7 @@ This is fairly insulated wire, with two core wires run inside. I decided to get 
 This part will differ from car to car, as, even with the same year of Miata, you may or may not have it easier than others. If your car *does* have cruise control, as in the case with my car, you will have to do a bit more work to be able to run the wires through the firewall. If you don't, congrats, you have it easier!
 
 #### No cruise
-Briefly, if you don't have cruise, on the drivers side of the engine bay, up on the firewall, you will see two pipes running into the firewall. These are for your heatercore. Don't mess with them. Nearby you should see an open grommet, or at least, grommet with no wires passing through. Use this to pass your wires through, and only follow the next steps as a general process (no drilling).
-
+Briefly, if you don't have cruise, on the drivers side of the engine bay, up on the firewall, you will see two pipes running into the firewall. These are for your heatercore. Don't mess with them. Nearby you should see an open grommet, or at least, grommet with no wires passing through. Use this to pass your wires through, and only follow the next steps as a general process.
 ### Cruise Controll Cars
 ![Firewall Inner](../images/Build/Car/FireWall.jpg)
 
@@ -179,12 +178,54 @@ From the inside of the car, under the dash, on the gas pedal, we will find two c
 ![Firewall Outer](../images/Build/Car/FirewallOuter.jpg)
 View From the outside, on the drivers side. (Circled being the cruise cable.)
 
-We will go ahead and drill through nearby here.
+Ideally, you would either create your own, new grommet, or find a pre-existing area to wire your cables through, but I ended up using the holes where the heatercore pipes run, even though I recommend not doing that. They can get hot, though, with insulated wires, they will likely be fine, as long as the temp rating is high enough. I would still recommend finding a better area to route the cables, if you can.
+
+![Cables through firewall](../images/Build/Car/FirewallCables.jpg)
+Cables Entering through heatercore grommet.
+Make sure you keep track of which cable goes to which headlight. It's easy to mix them up if you don't.
+
+![Inner Wires1](../images/Build/Car/InnerWires1.jpg)
+Cables routed under the dash, where the heater core is, and through to where your radio normall is. Now, this is much easier if you have your radio out, if you choose to mount your components like I do (which I don't entirely recommend. You will see why.)
+
+![Routing](../images/Build/Car/Routing1.jpg)
+Route the cables away from the engine, to keep it away from the extreme temps.
+
+![Drivers Side](../images/Build/Car/Drivers.jpg)
+Connections on drivers side
+
+![Passangers Side](../images/Build/Car/Passangers.jpg)
+Connections on passangers side
+
+Note: I decided to use RED as UP and BLACK as DOWN, meaning I am connecting RED to RED w/ YELLOW, and BLACK to WHITE w/ RED
 
 
-![Drilled Firewall]
+![OEM Button](../images/Build/Car/OEM12V.jpg)
+If you decide to keep the OEM button functionality (which I recommend), you will need to remove the tombstone center plate (if you have a Miata), and find the RED w/ YELLOW wire on the button.
+Second from the left, on the bottom. We will want to splice into this, and run a wire down to the radio hole, along with the rest of the cables.
+![OEMRun](../images/Build/Car/OEM12VRun.jpg)
+Run wire
 
-![Ran Wires] - connection to headlamps, run location, routeing on interior
+![Ground Spliced](../images/Build/Car/GroundSpliced.jpg)
+We will want a few ground leads, so we can take that off of any point on the car, but I chose to use the close by radio ground, using a T-Junction splice.
+
+
+![Inner](../images/Build/Car/Run.jpg)
+All in all, we should have two constant 12V wires, two ground wires, and a 12V source from the OEM button. We can run these under the console area like so.
+
+One 12V source to the relay COM port, one 12V source to the power supply, one ground source to the optocoupler, one ground source to the power supply, and the switched 12V source to the optocoupler.
+
+
 
 ## Installing Components
 
+### Ideal Mounts
+Realistically, you should probably get a project box, mount everything securely in said box, and then mount that somewhere under the dash, to keep everything as neat and tidy as possible. Well, I decided to not do that for various reasons, but I wouldn't recommend following this step, and do your own work instead.
+
+### Alternative
+If you want to follow what I do, feel free. It was just most convinient for me. I plan to mount them more securely with double sided tape as opposed to electrical tape soon.
+
+![PSB](../images/Build/Car/PowerSupplyBattery.jpg)
+Power Supply and battery location
+
+![Components](../images/Build/Car/Components.jpg)
+Main components
