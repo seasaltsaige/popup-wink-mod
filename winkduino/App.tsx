@@ -92,14 +92,14 @@ const App = () => {
               <View style={styles.flexRow}>
                 {[
                   [
-                    { title: "Both Up", i: 1 },
-                    { title: "Both Down", i: 2 },
-                    { title: "Both Blink", i: 3 }
-                  ],
-                  [
                     { title: "Left Up", i: 4 },
                     { title: "Left Down", i: 5 },
                     { title: "Left Wink", i: 6 }
+                  ],
+                  [
+                    { title: "Both Up", i: 1 },
+                    { title: "Both Down", i: 2 },
+                    { title: "Both Blink", i: 3 }
                   ],
                   [
                     { title: "Right Up", i: 7 },
