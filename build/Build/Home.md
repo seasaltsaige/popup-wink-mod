@@ -229,3 +229,6 @@ Power Supply and battery location
 
 ![Components](../images/Build/Car/Components.jpg)
 Main components
+
+
+Once everything is connected and wired up, congrats! Your app should now be able to connect to the Nano, and control it with the provided controller! (Don't do this while driving >:( I know it's tempting)
