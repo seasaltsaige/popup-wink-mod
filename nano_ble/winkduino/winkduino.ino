@@ -336,12 +336,15 @@ void loop() {
             delay(HEADLIGHT_MOVEMENT_DELAY);
 
             // Left back up
-            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-            // Right down at same time
+            // Right down at same 
             digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
             digitalWrite(OUT_PIN_RIGHT_UP, LOW);
 
+
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
             // Wait
             delay(HEADLIGHT_MOVEMENT_DELAY);
 
@@ -352,10 +355,10 @@ void loop() {
             digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
             digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
             // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
+            // delay(HEADLIGHT_MOVEMENT_DELAY);
 
-            // Turn all off
-            setAllOff();
+            // // Turn all off
+            // setAllOff();
           break;
           case 11:
             // "Wave" right first
@@ -364,34 +367,33 @@ void loop() {
             // Right Down
             digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
             digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-            // Right back up
-            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-            // Left down at same time
-            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-            digitalWrite(OUT_PIN_LEFT_UP, LOW);
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
 
-            // Turn right off
-            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+            // Wait
+            delay(HEADLIGHT_MOVEMENT_DELAY);
 
             // Left back up
-            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+            // Right down at same 
+            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+            digitalWrite(OUT_PIN_LEFT_UP, LOW);
+
+
+            delay(HEADLIGHT_MOVEMENT_DELAY);
+
+            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
             // Wait
             delay(HEADLIGHT_MOVEMENT_DELAY);
 
-            // Turn all off
-            setAllOff();
-
+            // Turn left off
+            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+            // Right back up
+            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            break;
           case 12:
             syncHeadlights();
           break;
-          // Not sure if I will implement this yet.
           default:
             // Anything from 11-111 should be expected, allowing for a percentage up (sleepy eyes)
             // Slider on app, allowing to be set
