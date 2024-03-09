@@ -33,7 +33,8 @@ const int HEADLIGHT_MOVEMENT_DELAY = 700;
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 // Characteristic to be written to
 const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
-
+// Custom command Characteristic that will recieve the presets 
+const char *customCommandCaracteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51525";
 // Potentially will be used to write to when busy and when available (forcing buttons to be pressed at normal times)
 // Not entirely necessary if this app is just for me, but nice for a public thing.
 const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
@@ -52,6 +53,8 @@ BLEStringCharacteristic resetCharacteristic(resetCharacteristicUUID, BLENotify, 
 
 BLEStringCharacteristic rightStatusCharacteristic(rightStatusUUID, BLENotify, 4);
 BLEStringCharacteristic leftStatusCharacteristic(leftStatusUUID, BLENotify, 4);
+
+BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUUID, BLEWrite, 512);
 
 bool buttonInterrupt();
 void syncHeadlights();
@@ -96,6 +99,7 @@ void setup() {
 
   BLE.setAdvertisedService(service);
   service.addCharacteristic(requestCharacteristic);
+  service.addCharacteristic(customCommandCharacteristic);
   service.addCharacteristic(responseCharacteristic);
   service.addCharacteristic(resetCharacteristic);
   
@@ -148,7 +152,11 @@ void loop() {
       // Moved so it actually works to interrupt
       bool interrupt = buttonInterrupt();
       if (interrupt) return;
+      
+      // Custom commands
+      if (customCommandCharacteristic.written()) {}
 
+      // Default Commands
       if (requestCharacteristic.written()) {
         String writtenValue = requestCharacteristic.value();
         Serial.println(writtenValue);
@@ -401,15 +409,15 @@ void loop() {
               // TODO: Implement logic
               int v = valueInt-13;
               double scaled = ((double)1/((double)100))*(double)v;
-              Serial.println("SCALED");
-              Serial.println(scaled);
 
+              // TODO: Take current position into account and move each one individually
               syncHeadlights();
               delay(HEADLIGHT_MOVEMENT_DELAY);
 
               setAllOff();
               
               percentageDrop(scaled);
+
               leftPercentageFromTop = scaled;
               rightPercentageFromTop = scaled;
               resetCharacteristic.setValue("1");
