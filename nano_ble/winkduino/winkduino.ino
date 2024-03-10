@@ -445,6 +445,53 @@ void loop() {
   }
 }
 
+// ---------------------------------- //
+// Function calls for headlight movement
+// Wink calls will need to have default movement delays, as they need time to move all the way down, and back
+
+
+// Both
+void bothUp() {
+  
+}
+
+void bothDown() {
+
+}
+
+void bothBlink() {
+
+}
+
+
+// Left
+void leftUp() {
+
+}
+
+void leftDown() {
+
+}
+
+void leftWink() {
+
+}
+
+
+// Right
+void rightUp() {
+
+}
+
+void rightDown() {
+
+}
+
+void rightWink() {
+
+}
+
+
 void setAllOff() {
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_UP, LOW);
