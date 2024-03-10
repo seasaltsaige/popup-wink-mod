@@ -23,7 +23,7 @@ const int INPUT_BUTTON_UP = 6;
 // Will be used to track status
 // Down will be 0, up will be 1
 int leftStatus = -1;
-int rightStatus = -1; 
+int rightStatus = -1;
 
 // TODO: Time headlight movement
 // Initial guess, 0.5s --> felt too short, : 0.75s
@@ -33,8 +33,8 @@ const int HEADLIGHT_MOVEMENT_DELAY = 700;
 const char* serviceUUID = "a144c6b0-5e1a-4460-bb92-3674b2f51520";
 // Characteristic to be written to
 const char* requestCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51520";
-// Custom command Characteristic that will recieve the presets 
-const char *customCommandCaracteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51525";
+// Custom command Characteristic that will recieve the presets
+const char* customCommandCaracteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51525";
 // Potentially will be used to write to when busy and when available (forcing buttons to be pressed at normal times)
 // Not entirely necessary if this app is just for me, but nice for a public thing.
 const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
@@ -43,8 +43,8 @@ const char* responseCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51521";
 // EASIST THING TO DO TO PREVENT HURTING MOTORS
 const char* resetCharacteristicUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51522";
 
-const char *leftStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51523";
-const char *rightStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51524";
+const char* leftStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51523";
+const char* rightStatusUUID = "a144c6b1-5e1a-4460-bb92-3674b2f51524";
 
 BLEService service(serviceUUID);
 BLEStringCharacteristic requestCharacteristic(requestCharacteristicUUID, BLEWrite, 4);
@@ -58,24 +58,35 @@ BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUU
 
 bool buttonInterrupt();
 void syncHeadlights();
-void percentageDrop(long percentage);
+void percentageDrop(double percentage);
 void setAllOff();
+void bothUp();
+void leftUp();
+void rightUp();
+void bothDown();
+void leftDown();
+void rightDown();
+void bothBlink();
+void leftWink();
+void rightWink();
+void leftWave();
+void rightWave();
 
 void setup() {
   // On setup, should call headlightSync, so the arduino can be aware of where everything is.
 
   // Basic BLE Setup.
   Serial.begin(115200);
-  
+
   delay(500);
   Serial.println("Starting arduino from boot");
-  
+
   // Set pins
   pinMode(OUT_PIN_RIGHT_UP, OUTPUT);
   pinMode(OUT_PIN_RIGHT_DOWN, OUTPUT);
   pinMode(OUT_PIN_LEFT_UP, OUTPUT);
   pinMode(OUT_PIN_LEFT_UP, OUTPUT);
-  
+
   // Using built in pullup resistor to eliminate variation in 12V -> opto-isolator input.
   pinMode(INPUT_BUTTON_UP, INPUT_PULLUP);
 
@@ -83,8 +94,8 @@ void setup() {
   syncHeadlights();
   delay(HEADLIGHT_MOVEMENT_DELAY);
   setAllOff();
-  
-  // NOTE: LOW means pressed in, HIGH means unpressed (INPUT_PULLUP) 
+
+  // NOTE: LOW means pressed in, HIGH means unpressed (INPUT_PULLUP)
   lastButtonStatus = digitalRead(INPUT_BUTTON_UP);
 
   BLE.setDeviceName("Winkduino");
@@ -94,7 +105,8 @@ void setup() {
 
   if (!BLE.begin()) {
     Serial.println("Starting Bluetooth® Low Energy module failed!");
-    while (1);
+    while (1)
+      ;
   }
 
   BLE.setAdvertisedService(service);
@@ -102,7 +114,7 @@ void setup() {
   service.addCharacteristic(customCommandCharacteristic);
   service.addCharacteristic(responseCharacteristic);
   service.addCharacteristic(resetCharacteristic);
-  
+
   service.addCharacteristic(leftStatusCharacteristic);
   service.addCharacteristic(rightStatusCharacteristic);
 
@@ -122,7 +134,7 @@ void loop() {
 
   bool interrupt = buttonInterrupt();
   if (interrupt) return;
-  
+
 
   BLEDevice central = BLE.central();
 
@@ -152,9 +164,14 @@ void loop() {
       // Moved so it actually works to interrupt
       bool interrupt = buttonInterrupt();
       if (interrupt) return;
-      
+
       // Custom commands
-      if (customCommandCharacteristic.written()) {}
+      if (customCommandCharacteristic.written()) {
+
+
+
+        
+      }
 
       // Default Commands
       if (requestCharacteristic.written()) {
@@ -168,254 +185,77 @@ void loop() {
         switch (valueInt) {
           // Both Up
           case 1:
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-            }
-
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-            }
-
-            leftStatus = 1;
-            rightStatus = 1;
-          break;
+            bothUp();
+            break;
 
           // Both Down
           case 2:
-            if (leftStatus != 0) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-            }
-
-            if (rightStatus != 0) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-            }
-
-            leftStatus = 0;
-            rightStatus = 0;
-          break;
+            bothDown();
+            break;
           // Both Blink
           case 3:
-          // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-              leftStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-              leftStatus = 0;
-            }
-
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-              rightStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-              rightStatus = 0;
-            }
-
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-              leftStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-              leftStatus = 0;
-            }
-
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-              rightStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-              rightStatus = 0;
-            }
-
-          break;
+            // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
+            bothBlink();
+            break;
 
           // Left Up
           case 4:
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-              leftStatus = 1;
-            }
-            
-          break;
+            leftUp();
+            break;
 
           // Left Down
           case 5:
-            if (leftStatus != 0) {
-              // Serial.println(leftStatus)
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-              leftStatus = 0;
-            }
-          break;
+            leftDown();
+            break;
 
           // Left Blink (Wink)
           case 6:
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-              leftStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-              leftStatus = 0;
-            }
-
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            if (leftStatus != 1) {
-              digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-              digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-              leftStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_LEFT_UP, LOW);
-              leftStatus = 0;
-            }
-
-          break;
+            leftWink();
+            break;
 
           // Right Up
           case 7:
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-              rightStatus = 1;
-            }
-          break;
+            rightUp();
+            break;
 
           // Right Down
           case 8:
-            if (rightStatus != 0) {
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              rightStatus = 0;
-            }
-          break;
+            rightDown();
+            break;
 
           // Right Blink (Wink)
           case 9:
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-              rightStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-              rightStatus = 0;
-            }
+            rightWink();
+            break;
 
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            if (rightStatus != 1) {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-              digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-              rightStatus = 1;
-            } else {
-              digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-              digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-              rightStatus = 0;
-            }
-
-          break;
           // "Wave" left first
           case 10:
-            // App forces headlights to be up, in order to send these two commands
-            // Left Down
-            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-            digitalWrite(OUT_PIN_LEFT_UP, LOW);
+            leftWave();
+            break;
 
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            // Left back up
-            // Right down at same 
-            digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-
-
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            // Turn left off
-            digitalWrite(OUT_PIN_LEFT_UP, LOW);
-            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
-            // Right back up
-            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-            // Wait
-            // delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            // // Turn all off
-            // setAllOff();
-          break;
           case 11:
             // "Wave" right first
-
-            // Same logic as above, but switched for right first
-            // Right Down
-            digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            // Left back up
-            // Right down at same 
-            digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
-            digitalWrite(OUT_PIN_LEFT_UP, LOW);
-
-
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-            digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-            // Wait
-            delay(HEADLIGHT_MOVEMENT_DELAY);
-
-            // Turn left off
-            digitalWrite(OUT_PIN_RIGHT_UP, LOW);
-            digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
-            // Right back up
-            digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-            digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+            rightWave();
             break;
+
           case 12:
             syncHeadlights();
-          break;
+            break;
+
           default:
             // Anything from 11-111 should be expected, allowing for a percentage up (sleepy eyes)
             // Slider on app, allowing to be set
             if (valueInt >= 13 && valueInt <= 113) {
               // TODO: Implement logic
-              int v = valueInt-13;
-              double scaled = ((double)1/((double)100))*(double)v;
+              int v = valueInt - 13;
+              double scaled = ((double)1 / ((double)100)) * (double)v;
 
               // TODO: Take current position into account and move each one individually
               syncHeadlights();
               delay(HEADLIGHT_MOVEMENT_DELAY);
 
               setAllOff();
-              
+
               percentageDrop(scaled);
 
               leftPercentageFromTop = scaled;
@@ -423,7 +263,7 @@ void loop() {
               resetCharacteristic.setValue("1");
             }
 
-          break;
+            break;
         }
         delay(HEADLIGHT_MOVEMENT_DELAY);
         setAllOff();
@@ -436,12 +276,10 @@ void loop() {
           leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
           rightStatusCharacteristic.setValue(String(1 - rightPercentageFromTop));
         }
-
       }
     }
 
     Serial.println("Central device disconnected.");
-
   }
 }
 
@@ -452,51 +290,221 @@ void loop() {
 
 // Both
 void bothUp() {
-  
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  }
+
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  }
+
+  leftStatus = 1;
+  rightStatus = 1;
 }
 
 void bothDown() {
+  if (leftStatus != 0) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  }
 
+  if (rightStatus != 0) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+  }
+
+  leftStatus = 0;
+  rightStatus = 0;
 }
 
 void bothBlink() {
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    leftStatus = 0;
+  }
 
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    rightStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    rightStatus = 0;
+  }
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    leftStatus = 0;
+  }
+
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    rightStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    rightStatus = 0;
+  }
 }
 
 
 // Left
 void leftUp() {
-
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+  }
 }
 
 void leftDown() {
-
+  if (leftStatus != 0) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    leftStatus = 0;
+  }
 }
 
 void leftWink() {
 
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    leftStatus = 0;
+  }
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  if (leftStatus != 1) {
+    digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+    digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+    leftStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_LEFT_UP, LOW);
+    leftStatus = 0;
+  }
 }
 
 
 // Right
 void rightUp() {
-
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    rightStatus = 1;
+  }
 }
 
 void rightDown() {
-
+  if (rightStatus != 0) {
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    rightStatus = 0;
+  }
 }
 
 void rightWink() {
 
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    rightStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    rightStatus = 0;
+  }
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  if (rightStatus != 1) {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+    digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+    rightStatus = 1;
+  } else {
+    digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+    digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+    rightStatus = 0;
+  }
 }
 
-
-void setAllOff() {
-  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+void leftWave() {
+  // App forces headlights to be up, in order to send these two commands
+  // Left Down
+  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
   digitalWrite(OUT_PIN_LEFT_UP, LOW);
-  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+
+  // Wait
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  // Left back up
+  // Right down at same
+  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
   digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  // Wait
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  // Turn left off
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  // Right back up
+  digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+}
+
+void rightWave() {
+  digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+
+  // Wait
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  // Left back up
+  // Right down at same
+  digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+
+
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
+  // Wait
+  delay(HEADLIGHT_MOVEMENT_DELAY);
+
+  // Turn left off
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  // Right back up
+  digitalWrite(OUT_PIN_LEFT_UP, HIGH);
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
 }
 
 // Sleepy eye working!
@@ -517,6 +525,16 @@ void percentageDrop(double percentage) {
   setAllOff();
 }
 
+
+// ------------------------------------------ //
+// HELPER FUNCTIONS //
+void setAllOff() {
+  digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
+  digitalWrite(OUT_PIN_LEFT_UP, LOW);
+  digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
+  digitalWrite(OUT_PIN_RIGHT_UP, LOW);
+}
+
 /**
   Allows built in headlight button in Miata to still be used as close to normal as possible, allowing close to normal headlight opperation, even in the case of use of BLE. 
 */
@@ -525,7 +543,7 @@ bool buttonInterrupt() {
 
   if (readVal == lastButtonStatus)
     return false;
-    
+
   responseCharacteristic.setValue("1");
   if (readVal == LOW) {
     // Set headlights to UP
@@ -550,7 +568,7 @@ bool buttonInterrupt() {
       digitalWrite(OUT_PIN_RIGHT_UP, LOW);
     }
     leftStatus = 0;
-    rightStatus = 0;      
+    rightStatus = 0;
   }
   lastButtonStatus = !lastButtonStatus;
 
@@ -560,7 +578,6 @@ bool buttonInterrupt() {
 
   responseCharacteristic.setValue("0");
   return true;
-  
 }
 
 /**
@@ -575,7 +592,7 @@ void syncHeadlights() {
   digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
   digitalWrite(OUT_PIN_LEFT_UP, LOW);
 
-  delay(HEADLIGHT_MOVEMENT_DELAY * (1-leftPercentageFromTop));
+  delay(HEADLIGHT_MOVEMENT_DELAY * (1 - leftPercentageFromTop));
 
   // Ensure headlights move in unison
   // Move to up position
@@ -593,5 +610,4 @@ void syncHeadlights() {
   resetCharacteristic.setValue("0");
 
   responseCharacteristic.setValue("0");
-
 }
