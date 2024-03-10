@@ -54,7 +54,7 @@ BLEStringCharacteristic resetCharacteristic(resetCharacteristicUUID, BLENotify, 
 BLEStringCharacteristic rightStatusCharacteristic(rightStatusUUID, BLENotify, 4);
 BLEStringCharacteristic leftStatusCharacteristic(leftStatusUUID, BLENotify, 4);
 
-BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUUID, BLEWrite, 512);
+BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUUID, BLEWrite, 4);
 
 bool buttonInterrupt();
 void syncHeadlights();
@@ -167,10 +167,77 @@ void loop() {
 
       // Custom commands
       if (customCommandCharacteristic.written()) {
+        String writtenValue = customCommandCharacteristic.value();
+        Serial.println(writtenValue);
 
 
+        int valueInt = writtenValue.toInt();
 
-        
+        responseCharacteristic.setValue("1");
+        // Logic to control pin output based on written value
+        switch (valueInt) {
+          // Both Up
+          case 1:
+            bothUp();
+            break;
+
+          // Both Down
+          case 2:
+            bothDown();
+            break;
+          // Both Blink
+          case 3:
+            // Should function regardless of current headlight position (ie: Left is up, right is down -> Blink Command -> Left Down Left Up AND Right Up Right Down)
+            bothBlink();
+            break;
+
+          // Left Up
+          case 4:
+            leftUp();
+            break;
+
+          // Left Down
+          case 5:
+            leftDown();
+            break;
+
+          // Left Blink (Wink)
+          case 6:
+            leftWink();
+            break;
+
+          // Right Up
+          case 7:
+            rightUp();
+            break;
+
+          // Right Down
+          case 8:
+            rightDown();
+            break;
+
+          // Right Blink (Wink)
+          case 9:
+            rightWink();
+            break;
+
+          // "Wave" left first
+          case 10:
+            leftWave();
+            break;
+
+          case 11:
+            // "Wave" right first
+            rightWave();
+            break;
+
+
+        }
+
+        delay(HEADLIGHT_MOVEMENT_DELAY);
+        setAllOff();
+        responseCharacteristic.setValue("0");
+
       }
 
       // Default Commands
