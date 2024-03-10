@@ -133,7 +133,7 @@ function useBLE(): BluetoothLowEnergyApi {
 
       // Handle unintended disconnect
       deviceConnection.onDisconnected((err, device) => {
-        console.log(err);
+        console.log(device.name);
         setAllDevices([]);
         setConnectedDevice(null);
       });
@@ -152,34 +152,34 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   const subscribeToBusy = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
 
     if (base64.decode(characteristic?.value!) == "1") setIsBusy(true);
     else setIsBusy(false);
   }
 
   const subscribeToReset = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
-    console.log(base64.decode(characteristic?.value!));
+    // if (error) {
+    //   console.log(error);
+    // }
+    // console.log(base64.decode(characteristic?.value!));
     if (base64.decode(characteristic?.value!) == "1") setNeedsReset(true);
     else setNeedsReset(false);
   }
 
   const subscribeToLeft = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
     setLeftStatus(parseFloat(base64.decode(characteristic?.value!)));
   }
 
   const subscribeToRight = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
     setRightStatus(parseFloat(base64.decode(characteristic?.value!)));
   }
 

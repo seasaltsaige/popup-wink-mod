@@ -10,6 +10,8 @@ import {
 import base64 from "react-native-base64";
 import useBLE from "./useBLE";
 import DefaultModal from "./Modals/DefaultModal";
+import PresetsModal from "./Modals/PresetsModal";
+import CreatePresetModal from "./Modals/CreatePresetModal";
 // import { NavigationContainer } from "@react-navigation/native";
 // import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // import Home from "./pages/Home";
@@ -25,7 +27,6 @@ const App = () => {
     requestPermissions,
     scanForPeripherals,
     allDevices,
-    connectToDevice,
     connectedDevice,
     disconnectFromDevice,
     isBusy,
@@ -33,8 +34,7 @@ const App = () => {
     leftStatus,
     rightStatus
   } = useBLE();
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [text, setText] = useState<string>("");
+
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
@@ -47,16 +47,7 @@ const App = () => {
     scanForDevices();
   }, []);
 
-  // const hideModal = () => {
-  //   setIsModalVisible(false);
-  // };
-
-  // const openModal = async () => {
-  //   scanForDevices();
-  //   setIsModalVisible(true);
-  // };
-
-  async function sendData(data: number): Promise<void> {
+  async function sendDefaultData(data: number): Promise<void> {
     if (isBusy) return;
     try {
       await connectedDevice?.writeCharacteristicWithResponseForService(winkduinoServiceUUID, winkduinoRequestCharacteristicUUID, base64.encode(data.toString()));
@@ -66,8 +57,6 @@ const App = () => {
     }
   }
 
-  const [rssi, setRSSI] = useState(0);
-
   const [defaultModalVisible, setDefaultModalVisible] = useState(false);
   const [createPresetModalVisible, setCreatePresetModalVisible] = useState(false);
   const [presetsModalVisible, setPresetsModalVisible] = useState(false);
@@ -75,6 +64,12 @@ const App = () => {
 
   const closeDefault = () => {
     setDefaultModalVisible(false);
+  }
+  const closePresets = () => {
+    setPresetsModalVisible(false);
+  }
+  const closeCreatePresets = () => {
+    setCreatePresetModalVisible(false);
   }
 
 
@@ -94,6 +89,18 @@ const App = () => {
                 </Text>
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.ctaButton} onPress={() => setPresetsModalVisible(true)}>
+                <Text style={styles.ctaButtonText}>
+                  Go to presets
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.ctaButton} onPress={() => setCreatePresetModalVisible(true)}>
+                <Text style={styles.ctaButtonText}>
+                  Create a preset
+                </Text>
+              </TouchableOpacity>
+
               <DefaultModal
                 close={closeDefault}
                 visible={defaultModalVisible}
@@ -102,9 +109,23 @@ const App = () => {
                 leftStatus={leftStatus}
                 needsReset={needsReset}
                 rightStatus={rightStatus}
-                sendData={sendData}
+                sendData={sendDefaultData}
                 key={1}
               />
+
+              <PresetsModal
+                visible={presetsModalVisible}
+                close={closePresets}
+                isBusy={isBusy}
+                leftStatus={leftStatus}
+                rightStatus={rightStatus}
+                device={connectedDevice}
+              />
+
+              <CreatePresetModal
+                visible={createPresetModalVisible}
+                close={closeCreatePresets} /
+              >
 
 
             </View> :
@@ -208,33 +229,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-
-// import React from "react";
-// import { NavigationContainer } from "@react-navigation/native";
-// import { createStackNavigator } from "@react-navigation/stack";
-// import Home from "./pages/Home";
-
-// const Stack = createStackNavigator();
-
-// const App = () => {
-
-//   return (
-//     <NavigationContainer>
-//       <Stack.Navigator
-//         screenOptions={{ headerShown: false }}
-//         initialRouteName="Home">
-
-//         <Stack.Screen
-//           name="Home"
-//           component={Home}
-//         />
-
-//       </Stack.Navigator>
-//     </NavigationContainer>
-//   )
-
-// }
-
-
-// export default App;
