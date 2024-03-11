@@ -136,6 +136,7 @@ function useBLE(): BluetoothLowEnergyApi {
         console.log(device.name);
         setAllDevices([]);
         setConnectedDevice(null);
+        scanForPeripherals();
       });
 
     } catch (e) {
