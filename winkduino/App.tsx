@@ -77,71 +77,64 @@ const App = () => {
 
     <SafeAreaView style={styles.container}>
       <View style={styles.titleWrapper}>
-        {
-          connectedDevice ?
-            <View>
+
+        <View>
+          {
+            connectedDevice === null ?
+              <Text style={{ fontSize: 25, fontWeight: "bold" }}>Scanning for device...</Text> :
               <Text style={styles.titleText}>Connected to {connectedDevice.name}</Text>
+          }
+
+          <TouchableOpacity style={styles.ctaButton} onPress={() => setDefaultModalVisible(true)} key={5}>
+            <Text style={styles.ctaButtonText}>
+              Go to default commands
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.ctaButton} onPress={() => setPresetsModalVisible(true)} key={6}>
+            <Text style={styles.ctaButtonText}>
+              Go to presets
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.ctaButton} onPress={() => setCreatePresetModalVisible(true)} key={7}>
+            <Text style={styles.ctaButtonText}>
+              Create a preset
+            </Text>
+          </TouchableOpacity>
+
+          <DefaultModal
+            close={closeDefault}
+            visible={defaultModalVisible}
+            device={connectedDevice}
+            isBusy={isBusy}
+            leftStatus={leftStatus}
+            needsReset={needsReset}
+            rightStatus={rightStatus}
+            sendData={sendDefaultData}
+            key={1}
+          />
+
+          <PresetsModal
+            visible={presetsModalVisible}
+            close={closePresets}
+            isBusy={isBusy}
+            leftStatus={leftStatus}
+            rightStatus={rightStatus}
+            device={connectedDevice!}
+            key={2}
+          />
+
+          <CreatePresetModal
+            visible={createPresetModalVisible}
+            close={closeCreatePresets}
+            key={3}
+          />
 
 
-              <TouchableOpacity style={styles.ctaButton} onPress={() => setDefaultModalVisible(true)}>
-                <Text style={styles.ctaButtonText}>
-                  Go to default commands
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.ctaButton} onPress={() => setPresetsModalVisible(true)}>
-                <Text style={styles.ctaButtonText}>
-                  Go to presets
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.ctaButton} onPress={() => setCreatePresetModalVisible(true)}>
-                <Text style={styles.ctaButtonText}>
-                  Create a preset
-                </Text>
-              </TouchableOpacity>
-
-              <DefaultModal
-                close={closeDefault}
-                visible={defaultModalVisible}
-                device={connectedDevice}
-                isBusy={isBusy}
-                leftStatus={leftStatus}
-                needsReset={needsReset}
-                rightStatus={rightStatus}
-                sendData={sendDefaultData}
-                key={1}
-              />
-
-              <PresetsModal
-                visible={presetsModalVisible}
-                close={closePresets}
-                isBusy={isBusy}
-                leftStatus={leftStatus}
-                rightStatus={rightStatus}
-                device={connectedDevice}
-              />
-
-              <CreatePresetModal
-                visible={createPresetModalVisible}
-                close={closeCreatePresets} /
-              >
-
-
-            </View> :
-            (allDevices.length > 1 ?
-              (
-                allDevices.map((device) => (
-                  <Text>
-                    Device '{device.name}' RSSI: {device.rssi}
-                  </Text>
-                ))
-              ) :
-              <Text style={styles.titleText}>Scanning for device...</Text>)
-        }
-
+        </View>
       </View>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 

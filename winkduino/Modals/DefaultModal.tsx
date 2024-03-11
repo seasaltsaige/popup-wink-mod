@@ -25,13 +25,13 @@ const DefaultModal = (props: DefaultModalProps) => {
   return (
     <Modal
       transparent={false}
-      visible={visible && device !== null}
+      visible={visible}
       animationType="slide"
     >
       <View style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-        <Text style={{ fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30 }}>
-          Connected to {device!.name}
+        <Text style={device === null ? { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30, color: "red" } : { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30 }}>
+          {device === null ? "No device connected, try moving closer..." : `Connected to ${device!.name}`}
         </Text>
 
 
@@ -76,8 +76,17 @@ const DefaultModal = (props: DefaultModalProps) => {
                     <View style={styles.flexCol}>
                       {
                         part.map((command) => (
-                          <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} key={command.i} disabled={isBusy || needsReset} onPress={() => sendData(command.i)}>
-                            <Text style={needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>{command.title}</Text>
+                          <TouchableOpacity
+                            style={(device === null || isBusy || needsReset) ? styles.ctaButtonDisabled : styles.ctaButton}
+                            key={command.i}
+                            disabled={device === null || isBusy || needsReset}
+                            onPress={() => sendData(command.i)}
+                          >
+                            <Text
+                              style={(device === null || isBusy || needsReset) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}
+                            >
+                              {command.title}
+                            </Text>
                           </TouchableOpacity>
                         ))
                       }
@@ -97,14 +106,14 @@ const DefaultModal = (props: DefaultModalProps) => {
 
           <View style={{ display: "flex", flexDirection: "row", alignContent: "center" }}>
 
-            <TouchableOpacity style={(leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginRight: 10 } : { ...styles.ctaButton, marginRight: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(10)}>
-              <Text style={(leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+            <TouchableOpacity style={(device === null || needsReset || isBusy || leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginRight: 10 } : { ...styles.ctaButton, marginRight: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(10)}>
+              <Text style={(device === null || needsReset || isBusy || leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
                 Left Wave
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={(leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginLeft: 10 } : { ...styles.ctaButton, marginLeft: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(11)}>
-              <Text style={(leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+            <TouchableOpacity style={(device === null || needsReset || isBusy || leftStatus != 1 || rightStatus != 1) ? { ...styles.ctaButtonDisabled, marginLeft: 10 } : { ...styles.ctaButton, marginLeft: 10 }} disabled={leftStatus != 1 || rightStatus != 1} onPress={() => sendData(11)}>
+              <Text style={(device === null || needsReset || isBusy || leftStatus != 1 || rightStatus != 1) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
                 Right Wave
               </Text>
             </TouchableOpacity>
@@ -112,8 +121,8 @@ const DefaultModal = (props: DefaultModalProps) => {
           </View>
         </View>
 
-        <TouchableOpacity style={!needsReset ? styles.resetButtonDisabled : styles.resetButton} onPress={() => sendData(12)} disabled={!needsReset}>
-          <Text style={!needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>Sync Headlights</Text>
+        <TouchableOpacity style={(!needsReset || isBusy || device === null) ? styles.resetButtonDisabled : styles.resetButton} onPress={() => sendData(12)} disabled={!needsReset}>
+          <Text style={(!needsReset || isBusy || device === null) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>Sync Headlights</Text>
         </TouchableOpacity>
 
         <Text style={{ fontSize: 20, textAlign: "center", fontWeight: "bold" }}>Sleepy Eye</Text>
@@ -123,8 +132,8 @@ const DefaultModal = (props: DefaultModalProps) => {
           placeholder="Enter a value from 1-100"
           style={{ width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
         />
-        <TouchableOpacity style={needsReset ? styles.ctaButtonDisabled : styles.ctaButton} disabled={needsReset} onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 13)}>
-          <Text style={needsReset ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
+        <TouchableOpacity style={(device === null || needsReset || isBusy) ? styles.ctaButtonDisabled : styles.ctaButton} disabled={device === null || needsReset || isBusy} onPress={() => isNaN(parseInt(text)) ? "" : sendData(parseInt(text) + 13)}>
+          <Text style={(device === null || needsReset || isBusy) ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
             Send Percentage
           </Text>
         </TouchableOpacity>

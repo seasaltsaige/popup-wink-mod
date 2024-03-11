@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Button, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { saveCommand, deleteCommand, fetchAllCommands, Command } from "../AsyncStorage/Store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -70,7 +70,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
     let command = "";
 
     for (let i = 0; i < commandBody.length; i++) {
-      command += commandBody[i].title;
+      command += commandBody[i].title + (commandBody[i].delay ? ` ${commandBody[i].delay}ms` : "");
       if (i !== commandBody.length - 1) command += ", ";
     }
 
@@ -100,8 +100,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
   }
 
   const updateDelay = (delay: string) => {
-    if (isNaN(parseInt(delay))) return;
-    else setDelay(delay);
+    setDelay(delay);
   }
 
   const save = async () => {
@@ -138,16 +137,16 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
       animationType="slide"
       visible={visible}
     >
-      <View style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <ScrollView style={{ display: "flex", flexDirection: "column" }} contentContainerStyle={{ alignItems: "center" }}>
 
         <Text
-          style={error !== "" ? { fontSize: 20, fontWeight: "bold", color: "red", marginTop: 10 } : { fontSize: 20, fontWeight: "bold", color: "black", marginTop: 10 }}
+          style={error !== "" ? { fontSize: 25, fontWeight: "bold", color: "red", marginTop: 20 } : { fontSize: 25, fontWeight: "bold", color: "darkgreen", marginTop: 20 }}
         >
           Status: {error || status}
         </Text>
 
 
-        <Text style={{ fontSize: 20, marginTop: 10 }}>
+        <Text style={{ fontSize: 20, marginTop: 10, fontWeight: "500", textAlign: "center", paddingHorizontal: 15 }}>
           Current command sequence: {parseCommandArrayHumanReadable()}
         </Text>
 
@@ -207,7 +206,10 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
             keyboardType="numeric"
             style={{ width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
           />
-          <TouchableOpacity style={styles.ctaButton} onPress={() => setCommandBody((prev) => [...prev, { title: "Delay", delay: parseInt(delay) }])}>
+          <TouchableOpacity style={styles.ctaButton} onPress={() => setCommandBody((prev) => {
+            if (delay === "") return prev;
+            return [...prev, { title: "Delay", delay: parseInt(delay) }]
+          })}>
             <Text style={styles.ctaButtonText}>
               Add Delay
             </Text>
@@ -229,13 +231,15 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
           </TouchableOpacity>
         </View>
 
+
+        <Text style={{ fontSize: 20, fontWeight: "bold", marginVertical: 5 }}>Preset List</Text>
         <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", marginBottom: 5 }}>
           {commandList.map((c, i) => (
-            <View style={{ backgroundColor: "#f0f0f0", padding: 10, borderRadius: 5 }}>
-              <Text style={{ fontSize: 18, fontWeight: "500" }}>
-                #{i + 1} - {(c.name.slice("preset:".length, c.name.length))} || {c.command.length > 20 ? `${c.command.slice(0, 20)} ...` : c.command}
+            <View style={{ backgroundColor: "#ebc7c7", padding: 8, borderRadius: 5, margin: 5 }}>
+              <Text style={{ fontSize: 15, fontWeight: "bold", textAlign: "center" }}>
+                {(c.name.slice("preset:".length, c.name.length))} - {c.command.length > 20 ? `${c.command.slice(0, 20)} ...` : c.command}
               </Text>
-              <TouchableOpacity style={{ ...styles.ctaButton, height: 25, width: 100, alignSelf: "center" }} onPress={() => deleteCmd(c.name)}>
+              <TouchableOpacity style={{ ...styles.ctaButton, height: 25, width: 100, alignSelf: "center", backgroundColor: "#db2a2a" }} onPress={() => deleteCmd(c.name)}>
                 <Text style={{ color: "white" }}>Delete</Text>
               </TouchableOpacity>
             </View>
@@ -243,7 +247,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
         </View>
 
 
-      </View>
+      </ScrollView>
 
 
       <TouchableOpacity style={styles.ctaButton} onPress={() => close()}>

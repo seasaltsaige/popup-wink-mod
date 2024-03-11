@@ -38,16 +38,12 @@ const PresetsModal = (props: PresetsModalProps) => {
 
   const sendCommand = async (command: string) => {
     const commandParts = command.split(COMMAND_SEPERATOR);
-    console.log(commandParts);
 
     for (const cmd of commandParts) {
-      // console.log(cmd);
+
       if (!cmd.startsWith("d")) {
-        console.log(cmd, base64.encode(cmd));
         try {
-          const c = await device.writeCharacteristicWithResponseForService(winkduinoServiceUUID, customCommandCharacteristicUUID, base64.encode(cmd));
-          console.log(c.value);
-          console.log("Success writing");
+          await device.writeCharacteristicWithResponseForService(winkduinoServiceUUID, customCommandCharacteristicUUID, base64.encode(cmd));
         } catch (err) {
           console.log(err);
         }
@@ -58,13 +54,8 @@ const PresetsModal = (props: PresetsModalProps) => {
       } else {
         const delayTime = parseInt(cmd.split("d")[1])
         await delay(delayTime);
-        console.log("After delay2:   " + delayTime);
       }
-
-      console.log("end of cmd");
-
     }
-
   }
 
 
@@ -72,32 +63,21 @@ const PresetsModal = (props: PresetsModalProps) => {
     <Modal
       transparent={false}
       animationType="slide"
-      visible={visible && device !== null}
+      visible={visible}
     >
-      <View style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-
-        <View style={{ display: "flex", flexDirection: "row", marginBottom: 20 }}>
-          {/* View that will contain headlight status */}
-          <View style={{ display: "flex", flexDirection: "column", marginRight: 10 }}>
-            <Text style={{ fontSize: 20, textAlign: "center" }}>Left Headlight Status</Text>
-            <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{leftStatus}</Text>
-          </View>
-          <View style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
-            <Text style={{ fontSize: 20, textAlign: "center" }}>Right Headlight Status</Text>
-            <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{rightStatus}</Text>
-          </View>
-        </View>
+      <View style={{ flex: 1, justifyContent: "center", display: "flex", flexDirection: "column", alignItems: "center", alignContent: "center" }}>
 
 
 
-        <Text style={{ fontSize: 25, fontWeight: "bold" }}>Presets Pallete</Text>
-        <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+        <Text style={{ fontSize: 30, fontWeight: "bold" }}>Presets Pallete</Text>
+
+        <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", marginVertical: 30 }}>
           {
             commandList.length < 1 ?
-              <Text>No presets saved</Text>
+              <Text style={{ color: "red", fontSize: 25, fontWeight: "bold" }}>No presets saved; try making one!</Text>
               : commandList.map((cmd) => (
-                <TouchableOpacity style={styles.ctaButton} onPress={() => sendCommand(cmd.command)}>
-                  <Text style={styles.ctaButtonText}>
+                <TouchableOpacity style={isBusy ? styles.ctaButtonDisabled : styles.ctaButton} disabled={isBusy} onPress={() => sendCommand(cmd.command)}>
+                  <Text style={isBusy ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
                     {cmd.name.slice("preset:".length, cmd.name.length)}
                   </Text>
                 </TouchableOpacity>
@@ -107,6 +87,7 @@ const PresetsModal = (props: PresetsModalProps) => {
 
 
       </View>
+
       <TouchableOpacity style={styles.ctaButton} onPress={() => close()}>
         <Text style={styles.ctaButtonText}>
           Go Home
