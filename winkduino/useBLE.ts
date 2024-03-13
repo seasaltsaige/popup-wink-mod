@@ -100,7 +100,8 @@ function useBLE(): BluetoothLowEnergyApi {
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
-  const scanForPeripherals = () =>
+  const scanForPeripherals = () => {
+    console.log("Scanning");
     bleManager.startDeviceScan(null, { scanMode: ScanMode.Balanced, allowDuplicates: true, callbackType: ScanCallbackType.AllMatches }, (error, device) => {
       if (error) {
         console.log(error);
@@ -112,12 +113,15 @@ function useBLE(): BluetoothLowEnergyApi {
           }
           return prevState;
         });
-        console.log(device.name)
+        console.log("Found device: " + device.name);
+        connectToDevice(device);
       }
     });
+  }
 
   const connectToDevice = async (device: Device) => {
     try {
+      console.log("Connecting");
       const deviceConnection = await bleManager.connectToDevice(device.id);
       setConnectedDevice(deviceConnection);
       await deviceConnection.discoverAllServicesAndCharacteristics();
@@ -126,6 +130,15 @@ function useBLE(): BluetoothLowEnergyApi {
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, leftStatusUUID, subscribeToLeft);
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, rightStatusUUID, subscribeToRight);
       deviceConnection.monitorCharacteristicForService(winkduinoServiceUUID, winkduinoResponseCharacteristicUUID, subscribeToBusy);
+
+      // Handle unintended disconnect
+      deviceConnection.onDisconnected((err, device) => {
+        console.log(device.name);
+        setAllDevices([]);
+        setConnectedDevice(null);
+        scanForPeripherals();
+      });
+
     } catch (e) {
       console.log("FAILED TO CONNECT", e);
     }
@@ -140,34 +153,34 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   const subscribeToBusy = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
 
     if (base64.decode(characteristic?.value!) == "1") setIsBusy(true);
     else setIsBusy(false);
   }
 
   const subscribeToReset = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
-    console.log(base64.decode(characteristic?.value!));
+    // if (error) {
+    //   console.log(error);
+    // }
+    // console.log(base64.decode(characteristic?.value!));
     if (base64.decode(characteristic?.value!) == "1") setNeedsReset(true);
     else setNeedsReset(false);
   }
 
   const subscribeToLeft = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
     setLeftStatus(parseFloat(base64.decode(characteristic?.value!)));
   }
 
   const subscribeToRight = (error: BleError | null, characteristic: Characteristic | null) => {
-    if (error) {
-      console.log(error);
-    }
+    // if (error) {
+    //   console.log(error);
+    // }
     setRightStatus(parseFloat(base64.decode(characteristic?.value!)));
   }
 
