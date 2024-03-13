@@ -1,21 +1,34 @@
 # Gallery
-### App
-![App1](./Connection.jpg)
-Main Landing of App
+## App
+![HomeDisconnected](./ScanningHome.jpg)
+Landing page of the app. Displayed when no device is connected.
 
-![App2](./Connection2.jpg)
-Connection Prompt
+![HomeConnected](./HomeConnected.jpg)
+Landing page of the app. Displayed when Winkduino is connected.
 
-![App3](./CommandReady.jpg)
-Command Palette
+![DefaultDisconnected](./NotConnectedDefault.jpg)
+Default Commands when device is not connected
 
-![App4](./Moving.jpg)
-Headlights Moving
+![DefaultConnected](./DefaultConnected.jpg)
+Default Commands when device IS connected
 
-![App5](./SleepySet.jpg)
-Sleepy Eyes Set at 40%
+![DefaultMoving](./DefaultMoving.jpg)
+Default commands when headlights are moving
 
-### Car
+
+![CreatePreset](./CreatePresetEmpty.jpg)
+![CreatePreset2](./CreatePresetFilled.jpg)
+![CreatePreset3](./PresetCreated.jpg)
+Creating a preset, to be used as a shortcut, instead of pressing multiple default commands.
+
+
+
+![PresetsDisconnected](./PresetsNotConnected.jpg)
+Presets pallete with no connection
+![Presets](./ConnectedPresets.jpg)
+Presets List
+
+## Car
 ![Sleepy](./Sleepy.jpg)
 
 ![Wink](./Wink.gif)
