@@ -37,6 +37,7 @@ const PresetsModal = (props: PresetsModalProps) => {
 
 
   const sendCommand = async (command: string) => {
+    if (isBusy) return;
     const commandParts = command.split(COMMAND_SEPERATOR);
 
     for (const cmd of commandParts) {
@@ -67,20 +68,29 @@ const PresetsModal = (props: PresetsModalProps) => {
     >
       <View style={{ flex: 1, justifyContent: "center", display: "flex", flexDirection: "column", alignItems: "center", alignContent: "center" }}>
 
+        <Text style={device === null ? { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30, color: "red" } : { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30 }}>
+          {device === null ? "No device connected, try moving closer..." : `Connected to ${device!.name}`}
+        </Text>
 
+        <Text style={{ fontSize: 20, fontWeight: "bold", color: isBusy ? "red" : "black", textAlign: "center", marginBottom: 5 }}>
+          {isBusy ? "Headlights Moving..." : "Ready for command"}
+        </Text>
 
         <Text style={{ fontSize: 30, fontWeight: "bold" }}>Presets Pallete</Text>
 
-        <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", marginVertical: 30 }}>
+        <View style={{ display: "flex", flexDirection: "row", alignContent: "center", justifyContent: "center", flexWrap: "wrap", marginVertical: 30 }}>
           {
             commandList.length < 1 ?
               <Text style={{ color: "red", fontSize: 25, fontWeight: "bold" }}>No presets saved; try making one!</Text>
               : commandList.map((cmd) => (
+
                 <TouchableOpacity style={isBusy ? styles.ctaButtonDisabled : styles.ctaButton} disabled={isBusy} onPress={() => sendCommand(cmd.command)}>
+
                   <Text style={isBusy ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
                     {cmd.name.slice("preset:".length, cmd.name.length)}
                   </Text>
                 </TouchableOpacity>
+
               ))
           }
         </View>
