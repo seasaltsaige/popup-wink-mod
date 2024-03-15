@@ -82,9 +82,9 @@ const PresetsModal = (props: PresetsModalProps) => {
           {
             commandList.length < 1 ?
               <Text style={{ color: "red", fontSize: 25, fontWeight: "bold" }}>No presets saved; try making one!</Text>
-              : commandList.map((cmd) => (
+              : commandList.map((cmd, i) => (
 
-                <TouchableOpacity style={isBusy ? styles.ctaButtonDisabled : styles.ctaButton} disabled={isBusy} onPress={() => sendCommand(cmd.command)}>
+                <TouchableOpacity key={i} style={isBusy ? styles.ctaButtonDisabled : styles.ctaButton} disabled={isBusy} onPress={() => sendCommand(cmd.command)}>
 
                   <Text style={isBusy ? styles.ctaButtonTextDisabled : styles.ctaButtonText}>
                     {cmd.name.slice("preset:".length, cmd.name.length)}

@@ -49,9 +49,20 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("Editing Command");
   const [commandName, setCommandName] = useState<string>("");
-  const [commandBody, setCommandBody] = useState<{ title: string, i?: number; delay?: number }[]>([]);
+  const [commandBody, setCommandBody] = useState<{ title: string, i?: number; delay?: number; percentage?: number }[]>([]);
   const [commandList, setCommandList] = useState<Command[]>([]);
   const [delay, setDelay] = useState<string>("");
+  const [percentage, setPercentage] = useState<string>("");
+
+  const addPercentage = (name: string, type: number) => {
+    // Shouldn't happen, but just in case
+    if (isNaN(parseInt(percentage))) return;
+
+    setCommandBody((old) => (
+      [...old, { title: name, i: type, percentage: parseFloat(percentage) }]
+    ));
+
+  }
 
   const parseCommandArray: () => string = () => {
     let command = "";
@@ -59,6 +70,8 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
     for (let i = 0; i < commandBody.length; i++) {
       if (commandBody[i].delay !== undefined) {
         command += `d${commandBody[i].delay}`;
+      } else if (commandBody[i].percentage !== undefined) {
+        command += `${commandBody[i].i},${commandBody[i].percentage}`;
       } else command += commandBody[i].i;
       if (i !== commandBody.length - 1) command += COMMAND_SEPERATOR;
     }
@@ -70,7 +83,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
     let command = "";
 
     for (let i = 0; i < commandBody.length; i++) {
-      command += commandBody[i].title + (commandBody[i].delay ? ` ${commandBody[i].delay}ms` : "");
+      command += commandBody[i].title + (commandBody[i].delay ? ` ${commandBody[i].delay}ms` : commandBody[i].percentage ? ` by ${commandBody[i].percentage}%` : "");
       if (i !== commandBody.length - 1) command += ", ";
     }
 
@@ -99,6 +112,10 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
     }
   }
 
+  // const addBody = (command) => {
+
+  // }
+
   const updateDelay = (delay: string) => {
     setDelay(delay);
   }
@@ -107,11 +124,13 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
     if (commandName === "") {
       setError("Can't save command with no name.");
       setTimeout(() => setError(""), 2000);
+      return;
     }
 
     if (commandBody.length < 1) {
       setError("Can't save command with no values.");
       setTimeout(() => setError(""), 2000);
+      return;
     }
 
     try {
@@ -125,6 +144,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
       }
 
       setCommandBody([]);
+      setCommandName("");
     } catch (err) {
       console.log(err);
     }
@@ -140,7 +160,7 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
       <ScrollView style={{ display: "flex", flexDirection: "column" }} contentContainerStyle={{ alignItems: "center" }}>
 
         <Text
-          style={error !== "" ? { fontSize: 25, fontWeight: "bold", color: "red", marginTop: 20 } : { fontSize: 25, fontWeight: "bold", color: "darkgreen", marginTop: 20 }}
+          style={error !== "" ? { fontSize: 25, fontWeight: "bold", color: "red", marginTop: 20, textAlign: "center" } : { fontSize: 25, fontWeight: "bold", color: "darkgreen", marginTop: 20, textAlign: "center" }}
         >
           Status: {error || status}
         </Text>
@@ -161,37 +181,38 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
           style={{ width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
         />
 
+        <View style={{ display: "flex", flexDirection: "column", alignItems: "center", backgroundColor: "#f9f9f9", paddingBottom: 20, borderRadius: 10, margin: 10, paddingTop: 10, }}>
+          <Text style={{ fontSize: 25, fontWeight: "bold" }}>
+            Command Palette
+          </Text>
+          <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", marginHorizontal: 20, alignContent: "center", justifyContent: "center" }}>
 
-        <Text style={{ fontSize: 25, fontWeight: "bold", marginVertical: 10 }}>
-          Command Palette
-        </Text>
-        <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", marginHorizontal: 20, alignContent: "center", justifyContent: "center" }}>
+            {
+              [
+                { title: "Both Up", i: 1 },
+                { title: "Both Down", i: 2 },
+                { title: "Both Blink", i: 3 },
+                { title: "Left Up", i: 4 },
+                { title: "Left Down", i: 5 },
+                { title: "Left Wink", i: 6 },
+                { title: "Left Wave", i: 10 },
+                { title: "Right Up", i: 7 },
+                { title: "Right Down", i: 8 },
+                { title: "Right Wink", i: 9 },
+                { title: "Right Wave", i: 11 },
+              ].map((val) => (
+                <View>
 
-          {
-            [
-              { title: "Both Up", i: 1 },
-              { title: "Both Down", i: 2 },
-              { title: "Both Blink", i: 3 },
-              { title: "Left Up", i: 4 },
-              { title: "Left Down", i: 5 },
-              { title: "Left Wink", i: 6 },
-              { title: "Left Wave", i: 10 },
-              { title: "Right Up", i: 7 },
-              { title: "Right Down", i: 8 },
-              { title: "Right Wink", i: 9 },
-              { title: "Right Wave", i: 11 },
-            ].map((val) => (
-              <View>
+                  <TouchableOpacity style={styles.ctaButton} onPress={() => setCommandBody((prev) => [...prev, val])}>
+                    <Text style={styles.ctaButtonText}>
+                      {val.title}
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity style={styles.ctaButton} onPress={() => setCommandBody((prev) => [...prev, val])}>
-                  <Text style={styles.ctaButtonText}>
-                    {val.title}
-                  </Text>
-                </TouchableOpacity>
-
-              </View>
-            ))
-          }
+                </View>
+              ))
+            }
+          </View>
         </View>
 
         <Text style={{ marginTop: 20, fontWeight: "bold", fontSize: 25, }}>
@@ -206,15 +227,72 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
             keyboardType="numeric"
             style={{ width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
           />
+
           <TouchableOpacity style={styles.ctaButton} onPress={() => setCommandBody((prev) => {
             if (delay === "") return prev;
             return [...prev, { title: "Delay", delay: parseInt(delay) }]
           })}>
+
             <Text style={styles.ctaButtonText}>
               Add Delay
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Advanced Preset settings */}
+        {/* Includes that of lowering/raising a headlight by a percentage */}
+        {/* I am including this in advanced, as it could potentially cause damage if not done right */}
+
+        <View style={{ display: "flex", flexDirection: "column", alignItems: "center", backgroundColor: "#f9f9f9", paddingBottom: 20, borderRadius: 10, marginTop: 10, }}>
+          <Text style={{ marginTop: 20, fontWeight: "bold", fontSize: 25 }}>Advanced Presets</Text>
+          <Text style={{ textAlign: "center", fontWeight: "bold", color: "red" }}>Only use this if you know what you are doing! Incorrect percentages could result in damage!</Text>
+          <TextInput
+            value={percentage}
+            onChangeText={(text) => ((parseInt(text) <= 0 || parseInt(text) > 100) ? "" : setPercentage(text))}
+            placeholder="Enter a percentage, from 1-100"
+            keyboardType="numeric"
+            style={{ alignSelf: "center", width: 300, textAlign: "center", borderColor: "black", borderWidth: 1, padding: 0, marginVertical: 10 }}
+          />
+
+
+          <Text style={{ textAlign: "center", margin: 10, fontWeight: "500", color: "darkgreen" }}>
+            Select an option when percentage is set. This will add a command to send the headlights to the given percentage. It is up to you to ensure this is possible.
+          </Text>
+
+          {/* Button Container */}
+          <View style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+            {
+              [
+                [
+                  { title: "Left Up", i: 4 },
+                  { title: "Left Down", i: 5 },
+                ],
+                [
+                  { title: "Both Up", i: 1 },
+                  { title: "Both Down", i: 2 },
+                ],
+                [
+                  { title: "Right Up", i: 7 },
+                  { title: "Right Down", i: 8 },
+                ]
+              ].map((section) => (
+                // Section container
+                <View style={{ display: "flex", flexDirection: "column", alignContent: "space-between" }}>
+                  {
+                    section.map((value) => (
+                      // Specific Button
+                      <TouchableOpacity style={styles.ctaButton} onPress={() => addPercentage(value.title, value.i)}>
+                        <Text style={styles.ctaButtonText}>{value.title}</Text>
+                      </TouchableOpacity>
+                    ))
+                  }
+                </View>
+              ))
+            }
+          </View>
+
+        </View>
+
 
 
         <View style={{ marginVertical: 10, display: "flex", flexDirection: "row" }}>
@@ -230,7 +308,6 @@ const CreatePresetModal = (props: CreatePresetModalProps) => {
             </Text>
           </TouchableOpacity>
         </View>
-
 
         <Text style={{ fontSize: 20, fontWeight: "bold", marginVertical: 5 }}>Preset List</Text>
         <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", justifyContent: "center", marginBottom: 5 }}>
