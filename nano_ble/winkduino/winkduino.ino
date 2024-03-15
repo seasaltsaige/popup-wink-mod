@@ -54,11 +54,12 @@ BLEStringCharacteristic resetCharacteristic(resetCharacteristicUUID, BLENotify, 
 BLEStringCharacteristic rightStatusCharacteristic(rightStatusUUID, BLENotify, 4);
 BLEStringCharacteristic leftStatusCharacteristic(leftStatusUUID, BLENotify, 4);
 
-BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUUID, BLEWrite, 4);
+BLEStringCharacteristic customCommandCharacteristic(customCommandCaracteristicUUID, BLEWrite, 8);
 
 bool buttonInterrupt();
 void syncHeadlights();
 void percentageDrop(double percentage);
+String getValue(String data, char separator, int index);
 void setAllOff();
 void bothUp();
 void leftUp();
@@ -170,8 +171,36 @@ void loop() {
         String writtenValue = customCommandCharacteristic.value();
         Serial.println(writtenValue);
 
+        // We will want to handle the special percentage case
+        // This will contain a "," as the separator
+
+
+        // If the string has a ',' in it, we have a percentage based movement
+        // if (writtenValue.indexOf(',') != -1) {
+          // Can ONLY be between 1 and 9
+          // int val = getValue(writtenValue, ',', 0).toInt();
+
+
+          int percent = getValue(writtenValue, ',', 1).toInt();
+
+          // Serial.print(val);
+          // Serial.print("   ");
+          Serial.println(percent);
+
+          double scaled = ((double)1 / ((double)100)) * (double)percent;
+
+          // Serial.println(scaled);
+
+
+        //   return;
+
+        // }
+
 
         int valueInt = writtenValue.toInt();
+
+        Serial.print("VALUE INT: ");
+        Serial.println(valueInt);
 
         responseCharacteristic.setValue("1");
         // Logic to control pin output based on written value
@@ -233,8 +262,10 @@ void loop() {
 
 
         }
-
-        delay(HEADLIGHT_MOVEMENT_DELAY);
+        if (scaled == 0) {
+          Serial.println("Scaled is 0");
+          delay(HEADLIGHT_MOVEMENT_DELAY);
+        } else delay(HEADLIGHT_MOVEMENT_DELAY * scaled);
         setAllOff();
         responseCharacteristic.setValue("0");
 
@@ -353,7 +384,6 @@ void loop() {
 // ---------------------------------- //
 // Function calls for headlight movement
 // Wink calls will need to have default movement delays, as they need time to move all the way down, and back
-
 
 // Both
 void bothUp() {
@@ -595,6 +625,25 @@ void percentageDrop(double percentage) {
 
 // ------------------------------------------ //
 // HELPER FUNCTIONS //
+
+
+// https://arduino.stackexchange.com/questions/1013/how-do-i-split-an-incoming-string
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
 void setAllOff() {
   digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
   digitalWrite(OUT_PIN_LEFT_UP, LOW);
