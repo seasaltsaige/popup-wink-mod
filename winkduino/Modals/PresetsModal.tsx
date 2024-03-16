@@ -51,7 +51,12 @@ const PresetsModal = (props: PresetsModalProps) => {
 
         if (cmd === "3" || cmd === "6" || cmd === "9") await delay(HEADLIGHT_MOVEMENT_DELAY * 2);
         else if (cmd === "10" || cmd === "11") await delay(HEADLIGHT_MOVEMENT_DELAY * 4);
-        else await delay(HEADLIGHT_MOVEMENT_DELAY);
+        else {
+          if (cmd.includes(",")) {
+            const scale = (1 / 100) * parseFloat(cmd.split(",")[1]);
+            await delay(HEADLIGHT_MOVEMENT_DELAY * scale);
+          } else await delay(HEADLIGHT_MOVEMENT_DELAY);
+        }
       } else {
         const delayTime = parseInt(cmd.split("d")[1])
         await delay(delayTime);
@@ -67,6 +72,18 @@ const PresetsModal = (props: PresetsModalProps) => {
       visible={visible}
     >
       <View style={{ flex: 1, justifyContent: "center", display: "flex", flexDirection: "column", alignItems: "center", alignContent: "center" }}>
+
+        <View style={{ display: "flex", flexDirection: "row", marginBottom: 20 }}>
+          {/* View that will contain headlight status */}
+          <View style={{ display: "flex", flexDirection: "column", marginRight: 10 }}>
+            <Text style={{ fontSize: 20, textAlign: "center" }}>Left Headlight Status</Text>
+            <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{leftStatus}</Text>
+          </View>
+          <View style={{ display: "flex", flexDirection: "column", marginLeft: 10 }}>
+            <Text style={{ fontSize: 20, textAlign: "center" }}>Right Headlight Status</Text>
+            <Text style={{ textAlign: "center", fontSize: 25, fontWeight: "bold" }}>{rightStatus}</Text>
+          </View>
+        </View>
 
         <Text style={device === null ? { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30, color: "red" } : { fontSize: 25, fontWeight: "bold", textAlign: "center", marginBottom: 30 }}>
           {device === null ? "No device connected, try moving closer..." : `Connected to ${device!.name}`}

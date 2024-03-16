@@ -175,44 +175,47 @@ void loop() {
         // This will contain a "," as the separator
 
 
-        // If the string has a ',' in it, we have a percentage based movement
-        // if (writtenValue.indexOf(',') != -1) {
-          // Can ONLY be between 1 and 9
-          // int val = getValue(writtenValue, ',', 0).toInt();
+        int percent = getValue(writtenValue, ',', 1).toInt();
+        Serial.println(percent);
 
+        double scaled = ((double)1 / ((double)100)) * (double)percent;
 
-          int percent = getValue(writtenValue, ',', 1).toInt();
-
-          // Serial.print(val);
-          // Serial.print("   ");
-          Serial.println(percent);
-
-          double scaled = ((double)1 / ((double)100)) * (double)percent;
-
-          // Serial.println(scaled);
-
-
-        //   return;
-
-        // }
-
+        if (scaled == 0) scaled = 1;
 
         int valueInt = writtenValue.toInt();
 
-        Serial.print("VALUE INT: ");
-        Serial.println(valueInt);
-
         responseCharacteristic.setValue("1");
+
         // Logic to control pin output based on written value
         switch (valueInt) {
           // Both Up
           case 1:
+            leftPercentageFromTop -= scaled;
+            rightPercentageFromTop -= scaled;
+
+
+            if (leftPercentageFromTop < 0) leftPercentageFromTop = 0.0;
+            if (rightPercentageFromTop < 0) rightPercentageFromTop = 0.0;
+
+            if (leftPercentageFromTop > 1) leftPercentageFromTop = 1.0;
+            if (rightPercentageFromTop > 1) rightPercentageFromTop = 1.0;
+
             bothUp();
             break;
 
           // Both Down
           case 2:
+
+            leftPercentageFromTop += scaled;
+            rightPercentageFromTop += scaled;
+
+            if (leftPercentageFromTop < 0) leftPercentageFromTop = 0.0;
+            if (rightPercentageFromTop < 0) rightPercentageFromTop = 0.0;
+
+            if (leftPercentageFromTop > 1) leftPercentageFromTop = 1.0;
+            if (rightPercentageFromTop > 1) rightPercentageFromTop = 1.0;
             bothDown();
+
             break;
           // Both Blink
           case 3:
@@ -222,11 +225,21 @@ void loop() {
 
           // Left Up
           case 4:
+            leftPercentageFromTop -= scaled;
+
+            if (leftPercentageFromTop < 0) leftPercentageFromTop = 0.0;
+
+
+            if (leftPercentageFromTop > 1) leftPercentageFromTop = 1.0;
             leftUp();
             break;
 
           // Left Down
           case 5:
+            leftPercentageFromTop += scaled;
+            if (leftPercentageFromTop < 0) leftPercentageFromTop = 0.0;
+
+            if (leftPercentageFromTop > 1) leftPercentageFromTop = 1.0;
             leftDown();
             break;
 
@@ -237,11 +250,19 @@ void loop() {
 
           // Right Up
           case 7:
+            rightPercentageFromTop -= scaled;
+            if (rightPercentageFromTop < 0) rightPercentageFromTop = 0.0;
+
+            if (rightPercentageFromTop > 1) rightPercentageFromTop = 1.0;
             rightUp();
             break;
 
           // Right Down
           case 8:
+            rightPercentageFromTop += scaled;
+            if (rightPercentageFromTop < 0) rightPercentageFromTop = 0.0;
+
+            if (rightPercentageFromTop > 1) rightPercentageFromTop = 1.0;
             rightDown();
             break;
 
@@ -259,21 +280,34 @@ void loop() {
             // "Wave" right first
             rightWave();
             break;
-
-
         }
-        if (scaled == 0) {
-          Serial.println("Scaled is 0");
+
+        if (scaled == 0)
           delay(HEADLIGHT_MOVEMENT_DELAY);
-        } else delay(HEADLIGHT_MOVEMENT_DELAY * scaled);
+        else
+          delay(HEADLIGHT_MOVEMENT_DELAY * scaled);
+
+        leftStatus = -1;
+        rightStatus = -1;
+
+        Serial.println(leftPercentageFromTop);
+
+        Serial.println(rightPercentageFromTop);
+        if (leftPercentageFromTop >= 0 && leftPercentageFromTop <= 1) {
+          leftStatusCharacteristic.setValue(String(1 - leftPercentageFromTop));
+        }
+
+        if (rightPercentageFromTop >= 0 && rightPercentageFromTop <= 1)
+          rightStatusCharacteristic.setValue(String(1 - rightPercentageFromTop));
+
         setAllOff();
         responseCharacteristic.setValue("0");
-
       }
 
       // Default Commands
       if (requestCharacteristic.written()) {
         String writtenValue = requestCharacteristic.value();
+        Serial.println("REQ CHAR WRITTEN: ");
         Serial.println(writtenValue);
 
         int valueInt = writtenValue.toInt();
@@ -397,8 +431,10 @@ void bothUp() {
     digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
   }
 
-  leftStatus = 1;
-  rightStatus = 1;
+  if ((double)((int)(leftPercentageFromTop)) == leftPercentageFromTop)
+    leftStatus = 1;
+  if ((double)((int)(rightPercentageFromTop)) == rightPercentageFromTop)
+    rightStatus = 1;
 }
 
 void bothDown() {
@@ -411,9 +447,10 @@ void bothDown() {
     digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
     digitalWrite(OUT_PIN_RIGHT_UP, LOW);
   }
-
-  leftStatus = 0;
-  rightStatus = 0;
+  if ((double)((int)(leftPercentageFromTop)) == leftPercentageFromTop)
+    leftStatus = 0;
+  if ((double)((int)(rightPercentageFromTop)) == rightPercentageFromTop)
+    rightStatus = 0;
 }
 
 void bothBlink() {
@@ -466,7 +503,9 @@ void leftUp() {
   if (leftStatus != 1) {
     digitalWrite(OUT_PIN_LEFT_DOWN, LOW);
     digitalWrite(OUT_PIN_LEFT_UP, HIGH);
-    leftStatus = 1;
+
+    if ((double)((int)(leftPercentageFromTop)) == leftPercentageFromTop)
+      leftStatus = 1;
   }
 }
 
@@ -474,8 +513,13 @@ void leftDown() {
   if (leftStatus != 0) {
     digitalWrite(OUT_PIN_LEFT_DOWN, HIGH);
     digitalWrite(OUT_PIN_LEFT_UP, LOW);
-    leftStatus = 0;
   }
+
+  Serial.print("LEFT DOWN LOG: ");
+  Serial.println((double)((int)(leftPercentageFromTop)) == leftPercentageFromTop);
+
+  if ((double)((int)(leftPercentageFromTop)) == leftPercentageFromTop)
+    leftStatus = 0;
 }
 
 void leftWink() {
@@ -509,7 +553,8 @@ void rightUp() {
   if (rightStatus != 1) {
     digitalWrite(OUT_PIN_RIGHT_DOWN, LOW);
     digitalWrite(OUT_PIN_RIGHT_UP, HIGH);
-    rightStatus = 1;
+    if ((double)((int)(rightPercentageFromTop)) == rightPercentageFromTop)
+      rightStatus = 1;
   }
 }
 
@@ -517,7 +562,8 @@ void rightDown() {
   if (rightStatus != 0) {
     digitalWrite(OUT_PIN_RIGHT_UP, LOW);
     digitalWrite(OUT_PIN_RIGHT_DOWN, HIGH);
-    rightStatus = 0;
+    if ((double)((int)(rightPercentageFromTop)) == rightPercentageFromTop)
+      rightStatus = 0;
   }
 }
 
@@ -628,20 +674,19 @@ void percentageDrop(double percentage) {
 
 
 // https://arduino.stackexchange.com/questions/1013/how-do-i-split-an-incoming-string
-String getValue(String data, char separator, int index)
-{
-    int found = 0;
-    int strIndex[] = { 0, -1 };
-    int maxIndex = data.length() - 1;
+String getValue(String data, char separator, int index) {
+  int found = 0;
+  int strIndex[] = { 0, -1 };
+  int maxIndex = data.length() - 1;
 
-    for (int i = 0; i <= maxIndex && found <= index; i++) {
-        if (data.charAt(i) == separator || i == maxIndex) {
-            found++;
-            strIndex[0] = strIndex[1] + 1;
-            strIndex[1] = (i == maxIndex) ? i+1 : i;
-        }
+  for (int i = 0; i <= maxIndex && found <= index; i++) {
+    if (data.charAt(i) == separator || i == maxIndex) {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i + 1 : i;
     }
-    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+  }
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
 void setAllOff() {
