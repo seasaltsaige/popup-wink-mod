@@ -2,7 +2,7 @@
 
 This project aims to be a "replacement" for the [MX-5 Tech](https://mx5tech.co.uk/wink-sleepy-eye-mod) Wink/Sleepy Eye mod. While, for most people, simply purchasing this product is the correct choice, as it is plug and play, this will aim to achieve the same result at a lower cost, but a bit more effort, though this reposity serves as a detailed guide on how to install the device in your own car, hopefully removing a lot of the difficulty. Plus it's a fun build :)
 
-### I am in the process of creating a product that is plug and play... if anyone sees this. 
+## See [OpenWink](https://github.com/seasaltsaige/openwink) now!
 
 ### DISCLAIMER:
 This will modify, cut, and replace some of the cars wiring harness in the headlight motors. It is reversable, but not to 100% OEM standards. Do this at your own risk. I am not responsible for any damage you cause to your car or yourself.
